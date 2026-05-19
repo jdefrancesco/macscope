@@ -114,6 +114,12 @@ func commands() []commandSpec {
 			Summary: "Correlate process, log, policy, and system events into one timeline.",
 			Run:     runTimeline,
 		},
+		{
+			Name:    "completion",
+			Usage:   "macscope completion <bash|zsh|fish>",
+			Summary: "Generate shell completion scripts.",
+			Run:     runCompletion,
+		},
 	}
 }
 

@@ -33,6 +33,7 @@ func TestRunHelp(t *testing.T) {
 		"macscope es [--json] [--last 30m] | --watch",
 		"macscope vpn [--json] [--last 60m] [vpn-name]",
 		"macscope timeline --pid <pid> [--last 30m] [--json|--jsonl]",
+		"macscope completion <bash|zsh|fish>",
 	} {
 		if !strings.Contains(stdout.String(), want) {
 			t.Fatalf("Run(help) output missing %q:\n%s", want, stdout.String())

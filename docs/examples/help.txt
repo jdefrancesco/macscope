@@ -34,3 +34,5 @@ Expected shape:
         Parse panic logs and classify watchdog/kernel reboot evidence.
     macscope timeline --pid <pid> [--last 30m] [--json|--jsonl]
         Correlate process, log, policy, and system events into one timeline.
+    macscope completion <bash|zsh|fish>
+        Generate shell completion scripts.

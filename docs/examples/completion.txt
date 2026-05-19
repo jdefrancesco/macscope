@@ -1,0 +1,15 @@
+Expected shape:
+
+  macscope completion <bash|zsh|fish>
+
+Examples:
+
+  macscope completion bash
+  macscope completion zsh
+  macscope completion fish
+
+Quick local sourcing:
+
+  source <(macscope completion bash)
+  source <(macscope completion zsh)
+  macscope completion fish | source

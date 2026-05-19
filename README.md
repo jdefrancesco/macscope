@@ -12,6 +12,7 @@ Current status:
 - `macscope persist` is implemented in Go.
 - `macscope tcc`, `macscope es`, and `macscope vpn` are implemented in Go.
 - `macscope timeline` is implemented in Go.
+- Shell completions are available for bash, zsh, and fish.
 
 ## Build And Run
 
@@ -29,6 +30,7 @@ go run ./cmd/macscope tcc --last 30m
 go run ./cmd/macscope es --last 30m
 go run ./cmd/macscope vpn
 go run ./cmd/macscope timeline --pid <pid>
+go run ./cmd/macscope completion zsh
 go test ./...
 go vet ./...
 ```
@@ -40,6 +42,7 @@ make help
 make build
 make test
 make vet
+make smoke
 make check
 ```
 
@@ -61,7 +64,22 @@ macscope panic --last [--json]
 macscope panic --file <panic-file> [--json]
 macscope panic --since 48h [--json]
 macscope timeline --pid <pid> [--last 30m] [--json|--jsonl]
+macscope completion <bash|zsh|fish>
 ```
+
+## Shell Completions
+
+`macscope completion <bash|zsh|fish>` prints a completion script for the requested shell.
+
+Quick local sourcing:
+
+```sh
+source <(macscope completion bash)
+source <(macscope completion zsh)
+macscope completion fish | source
+```
+
+For a persistent install, write the generated script into the completion directory managed by your shell or package manager.
 
 ## macho
 
