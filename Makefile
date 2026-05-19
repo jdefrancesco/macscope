@@ -20,7 +20,7 @@ FORMULA ?= $(DIST_DIR)/homebrew/$(BIN).rb
 HOMEBREW_TEMPLATE ?= packaging/homebrew/$(BIN).rb
 LDFLAGS ?= -s -w -X github.com/jdefrancesco/macscope/internal/cli.version=$(VERSION) -X github.com/jdefrancesco/macscope/internal/cli.buildCommit=$(BUILD_COMMIT) -X github.com/jdefrancesco/macscope/internal/cli.buildDate=$(BUILD_DATE)
 
-.PHONY: help all build run fmt test vet smoke check install uninstall install-completions uninstall-completions install-man uninstall-man homebrew-formula verify-homebrew-formula dist release clean
+.PHONY: help all build run fmt test vet smoke lint-workflows check install uninstall install-completions uninstall-completions install-man uninstall-man homebrew-formula verify-homebrew-formula dist release clean
 
 help:
 	@printf '%s\n' 'Targets:'
@@ -30,6 +30,7 @@ help:
 	@printf '  %-25s %s\n' 'test' 'Run Go tests, including command smoke tests.'
 	@printf '  %-25s %s\n' 'vet' 'Run go vet.'
 	@printf '  %-25s %s\n' 'smoke' 'Run command-level smoke tests.'
+	@printf '  %-25s %s\n' 'lint-workflows' 'Run actionlint against GitHub Actions workflows.'
 	@printf '  %-25s %s\n' 'check' 'Run fmt, test, and vet.'
 	@printf '  %-25s %s\n' 'install' 'Install the binary under PREFIX.'
 	@printf '  %-25s %s\n' 'uninstall' 'Remove the installed binary under PREFIX.'
@@ -62,6 +63,9 @@ vet:
 
 smoke:
 	$(GO) test ./cmd/macscope -run Smoke -count=1
+
+lint-workflows:
+	actionlint .github/workflows/*.yml
 
 check: fmt test vet
 

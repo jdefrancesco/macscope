@@ -1,0 +1,98 @@
+name: Release
+
+on:
+  push:
+    tags:
+      - "v*"
+
+permissions:
+  contents: write
+
+jobs:
+  release:
+    name: Build And Publish Release
+    runs-on: macos-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Set up Go
+        uses: actions/setup-go@v5
+        with:
+          go-version-file: go.mod
+          cache: true
+
+      - name: Check
+        run: make check
+
+      - name: Smoke
+        run: make smoke
+
+      - name: Release Metadata
+        id: meta
+        shell: bash
+        run: |
+          version="${GITHUB_REF_NAME}"
+          if [[ ! "${version}" =~ ^v[0-9]+\.[0-9]+\.[0-9]+([.-][0-9A-Za-z.-]+)?$ ]]; then
+            echo "Release tags must look like v0.1.0 or v0.1.0-rc.1; got ${version}" >&2
+            exit 2
+          fi
+
+          artifact="macscope_${version}_darwin_arm64"
+          url="https://github.com/${GITHUB_REPOSITORY}/releases/download/${version}/${artifact}.tar.gz"
+
+          {
+            echo "version=${version}"
+            echo "artifact=${artifact}"
+            echo "url=${url}"
+          } >> "${GITHUB_OUTPUT}"
+
+      - name: Build Release Archive
+        run: make dist VERSION=${{ steps.meta.outputs.version }} GOOS=darwin GOARCH=arm64
+
+      - name: Verify Release Checksum
+        run: shasum -a 256 -c dist/${{ steps.meta.outputs.artifact }}.tar.gz.sha256
+
+      - name: Render Homebrew Formula
+        shell: bash
+        run: |
+          sha256="$(cut -d ' ' -f1 "dist/${{ steps.meta.outputs.artifact }}.tar.gz.sha256")"
+          make verify-homebrew-formula \
+            VERSION=${{ steps.meta.outputs.version }} \
+            URL=${{ steps.meta.outputs.url }} \
+            SHA256="${sha256}"
+
+      - name: Release Notes
+        shell: bash
+        run: |
+          cat > dist/release-notes.md <<'NOTES'
+          macscope ${{ steps.meta.outputs.version }}
+
+          Assets:
+          - ${{ steps.meta.outputs.artifact }}.tar.gz
+          - ${{ steps.meta.outputs.artifact }}.tar.gz.sha256
+          - macscope.rb Homebrew formula
+          NOTES
+
+      - name: Publish GitHub Release
+        env:
+          GH_TOKEN: ${{ github.token }}
+        shell: bash
+        run: |
+          version="${{ steps.meta.outputs.version }}"
+          artifact="${{ steps.meta.outputs.artifact }}"
+          assets=(
+            "dist/${artifact}.tar.gz"
+            "dist/${artifact}.tar.gz.sha256"
+            "dist/homebrew/macscope.rb"
+          )
+
+          if gh release view "${version}" >/dev/null 2>&1; then
+            gh release upload "${version}" "${assets[@]}" --clobber
+          else
+            gh release create "${version}" "${assets[@]}" \
+              --title "macscope ${version}" \
+              --notes-file dist/release-notes.md
+          fi

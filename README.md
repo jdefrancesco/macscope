@@ -46,6 +46,7 @@ make build
 make test
 make vet
 make smoke
+make lint-workflows
 make check
 make install PREFIX="$HOME/.local"
 make install-completions PREFIX="$HOME/.local"
@@ -131,7 +132,7 @@ make release VERSION=v0.1.0
 make dist VERSION=v0.1.0 GOOS=darwin GOARCH=arm64
 ```
 
-CI runs the same `make check`, `make smoke`, and `make dist` paths on macOS.
+CI runs the same `make check`, `make smoke`, and `make dist` paths on macOS. `make lint-workflows` runs `actionlint` locally when it is installed.
 
 ## Homebrew Formula
 
@@ -156,6 +157,22 @@ Verify the rendered formula shape and install paths with:
 
 ```sh
 make verify-homebrew-formula VERSION=v0.1.0 URL=https://example.com/macscope_v0.1.0_darwin_arm64.tar.gz SHA256="$SHA256"
+```
+
+## Release Workflow
+
+Pushing a version tag like `v0.1.0` runs `.github/workflows/release.yml`. The workflow:
+
+- runs `make check` and `make smoke`
+- builds `dist/macscope_<version>_darwin_arm64.tar.gz`
+- verifies the SHA-256 checksum
+- renders and verifies `dist/homebrew/macscope.rb` using the final GitHub release asset URL
+- creates or updates the GitHub release with the tarball, checksum, and formula
+
+Local workflow linting:
+
+```sh
+make lint-workflows
 ```
 
 ## macho
