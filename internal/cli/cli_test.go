@@ -65,5 +65,8 @@ func TestAllKnownCommandsHaveHandlers(t *testing.T) {
 		if cmd.Run == nil {
 			t.Fatalf("%s has nil handler", cmd.Name)
 		}
+		if cmd.Usage == "" || cmd.Summary == "" {
+			t.Fatalf("%s has incomplete help metadata: %#v", cmd.Name, cmd)
+		}
 	}
 }

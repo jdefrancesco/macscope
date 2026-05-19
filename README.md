@@ -1,11 +1,11 @@
 # macscope
 
-macscope is a macOS introspection and triage toolkit written in Go. It is being ported from the `macscope.zsh` proof of concept into a production-quality CLI that keeps collection read-only by default and favors explainable output.
+macscope is a macOS introspection and triage toolkit written in Go. It replaces the practical parts of the original `macscope.zsh` proof of concept with a production-quality CLI that keeps collection read-only by default and favors explainable output.
 
 Current status:
 
-- `macscope.zsh` remains the live proof-of-concept implementation.
-- `cmd/macscope` contains the Go CLI skeleton and stable command routing.
+- `macscope.zsh` is retained as the historical proof-of-concept reference.
+- `cmd/macscope` contains the Go CLI implementation and stable command routing.
 - `macscope macho` is implemented in Go.
 - `macscope panic` is implemented in Go.
 - `macscope proc` and `macscope attach` are implemented in Go.
@@ -61,12 +61,6 @@ macscope panic --last [--json]
 macscope panic --file <panic-file> [--json]
 macscope panic --since 48h [--json]
 macscope timeline --pid <pid> [--last 30m] [--json|--jsonl]
-```
-
-During the port, recognized-but-unimplemented Go commands point back to the zsh fallback:
-
-```sh
-./macscope.zsh timeline --pid 123
 ```
 
 ## macho

@@ -4,7 +4,6 @@ import (
 	"context"
 	"fmt"
 	"io"
-	"strings"
 
 	"github.com/jdefrancesco/macscope/internal/output"
 )
@@ -12,11 +11,10 @@ import (
 const version = "dev"
 
 type commandSpec struct {
-	Name      string
-	Usage     string
-	Summary   string
-	Milestone string
-	Run       func(context.Context, []string, output.Streams) error
+	Name    string
+	Usage   string
+	Summary string
+	Run     func(context.Context, []string, output.Streams) error
 }
 
 func Run(ctx context.Context, args []string, streams output.Streams) int {
@@ -43,13 +41,6 @@ func Run(ctx context.Context, args []string, streams output.Streams) int {
 		return 2
 	}
 
-	if cmd.Run == nil {
-		fmt.Fprintf(streams.Err, "%q is recognized, but is not implemented in the Go CLI yet.\n", cmd.Name)
-		fmt.Fprintf(streams.Err, "Planned milestone: %s\n", cmd.Milestone)
-		fmt.Fprintf(streams.Err, "Current fallback: ./macscope.zsh %s\n", strings.Join(args, " "))
-		return 2
-	}
-
 	if err := cmd.Run(ctx, args[1:], streams); err != nil {
 		fmt.Fprintf(streams.Err, "%s: %v\n", cmd.Name, err)
 		return 1
@@ -70,67 +61,58 @@ func commandByName(name string) (commandSpec, bool) {
 func commands() []commandSpec {
 	return []commandSpec{
 		{
-			Name:      "macho",
-			Usage:     "macscope macho [--json] [--full] [--triage] <path>",
-			Summary:   "Inspect binary/app identity, architecture, signing, Gatekeeper, xattrs, and linked libraries.",
-			Milestone: "Milestone 2: macho",
-			Run:       runMacho,
+			Name:    "macho",
+			Usage:   "macscope macho [--json] [--full] [--triage] <path>",
+			Summary: "Inspect binary/app identity, architecture, signing, Gatekeeper, xattrs, and linked libraries.",
+			Run:     runMacho,
 		},
 		{
-			Name:      "proc",
-			Usage:     "macscope proc [--json] <pid-or-name>",
-			Summary:   "Triage a running process by PID or name.",
-			Milestone: "Milestone 4: attach/process triage",
-			Run:       runProc,
+			Name:    "proc",
+			Usage:   "macscope proc [--json] <pid-or-name>",
+			Summary: "Triage a running process by PID or name.",
+			Run:     runProc,
 		},
 		{
-			Name:      "attach",
-			Usage:     "macscope attach [--json] [--last 30m] <pid>",
-			Summary:   "Explain likely LLDB attach failures using signing, group, and log evidence.",
-			Milestone: "Milestone 4: attach",
-			Run:       runAttach,
+			Name:    "attach",
+			Usage:   "macscope attach [--json] [--last 30m] <pid>",
+			Summary: "Explain likely LLDB attach failures using signing, group, and log evidence.",
+			Run:     runAttach,
 		},
 		{
-			Name:      "persist",
-			Usage:     "macscope persist [--json] [--dir <launchd-dir>]",
-			Summary:   "Inspect launchd persistence locations and explain suspicious launch items.",
-			Milestone: "Milestone 5: persist",
-			Run:       runPersist,
+			Name:    "persist",
+			Usage:   "macscope persist [--json] [--dir <launchd-dir>]",
+			Summary: "Inspect launchd persistence locations and explain suspicious launch items.",
+			Run:     runPersist,
 		},
 		{
-			Name:      "tcc",
-			Usage:     "macscope tcc [--json] [--last 30m] | --watch",
-			Summary:   "Inspect recent or live TCC/privacy denial logs.",
-			Milestone: "Milestone 6: tcc",
-			Run:       runTCC,
+			Name:    "tcc",
+			Usage:   "macscope tcc [--json] [--last 30m] | --watch",
+			Summary: "Inspect recent or live TCC/privacy denial logs.",
+			Run:     runTCC,
 		},
 		{
-			Name:      "es",
-			Usage:     "macscope es [--json] [--last 30m] | --watch",
-			Summary:   "Inspect EndpointSecurity entitlement and access-denial logs.",
-			Milestone: "Milestone 6: es",
-			Run:       runES,
+			Name:    "es",
+			Usage:   "macscope es [--json] [--last 30m] | --watch",
+			Summary: "Inspect EndpointSecurity entitlement and access-denial logs.",
+			Run:     runES,
 		},
 		{
-			Name:      "vpn",
-			Usage:     "macscope vpn [--json] [--last 60m] [vpn-name]",
-			Summary:   "Inspect VPN service state, utun interfaces, DNS, proxy, routes, and recent logs.",
-			Milestone: "Milestone 6: vpn",
-			Run:       runVPN,
+			Name:    "vpn",
+			Usage:   "macscope vpn [--json] [--last 60m] [vpn-name]",
+			Summary: "Inspect VPN service state, utun interfaces, DNS, proxy, routes, and recent logs.",
+			Run:     runVPN,
 		},
 		{
-			Name:      "panic",
-			Usage:     "macscope panic --last | --file <panic-file> | --since 48h [--json]",
-			Summary:   "Parse panic logs and classify watchdog/kernel reboot evidence.",
-			Milestone: "Milestone 3: panic",
-			Run:       runPanic,
+			Name:    "panic",
+			Usage:   "macscope panic --last | --file <panic-file> | --since 48h [--json]",
+			Summary: "Parse panic logs and classify watchdog/kernel reboot evidence.",
+			Run:     runPanic,
 		},
 		{
-			Name:      "timeline",
-			Usage:     "macscope timeline --pid <pid> [--last 30m] [--json|--jsonl]",
-			Summary:   "Correlate process, log, policy, and system events into one timeline.",
-			Milestone: "Milestone 7: timeline and correlation",
-			Run:       runTimeline,
+			Name:    "timeline",
+			Usage:   "macscope timeline --pid <pid> [--last 30m] [--json|--jsonl]",
+			Summary: "Correlate process, log, policy, and system events into one timeline.",
+			Run:     runTimeline,
 		},
 	}
 }

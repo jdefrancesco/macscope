@@ -34,7 +34,3 @@ Expected shape:
         Parse panic logs and classify watchdog/kernel reboot evidence.
     macscope timeline --pid <pid> [--last 30m] [--json|--jsonl]
         Correlate process, log, policy, and system events into one timeline.
-
-  Status:
-    The Go CLI skeleton is active. macho, panic, proc, attach, persist, tcc, es, vpn, and timeline are implemented.
-    The existing ./macscope.zsh remains the proof-of-concept fallback during the port.
