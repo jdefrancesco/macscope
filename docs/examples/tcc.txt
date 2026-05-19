@@ -1,0 +1,17 @@
+Example:
+
+  macscope tcc --last 30m
+  macscope tcc --json --last 30m
+  macscope tcc --watch
+
+Purpose:
+
+  Inspect TCC/privacy denial logs using unified logging.
+
+Native tool:
+
+  log show / log stream
+
+Notes:
+
+  --watch streams raw matching log lines. JSON output is for bounded --last queries.

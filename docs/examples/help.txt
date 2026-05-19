@@ -24,11 +24,11 @@ Expected shape:
         Explain likely LLDB attach failures using signing, group, and log evidence.
     macscope persist [--json] [--dir <launchd-dir>]
         Inspect launchd persistence locations and explain suspicious launch items.
-    macscope tcc --last 30m | --watch
+    macscope tcc [--json] [--last 30m] | --watch
         Inspect recent or live TCC/privacy denial logs.
-    macscope es --last 30m | --watch
+    macscope es [--json] [--last 30m] | --watch
         Inspect EndpointSecurity entitlement and access-denial logs.
-    macscope vpn [vpn-name]
+    macscope vpn [--json] [--last 60m] [vpn-name]
         Inspect VPN service state, utun interfaces, DNS, proxy, routes, and recent logs.
     macscope panic --last | --file <panic-file> | --since 48h [--json]
         Parse panic logs and classify watchdog/kernel reboot evidence.
@@ -36,6 +36,6 @@ Expected shape:
         Correlate process, log, policy, and system events into one timeline.
 
   Status:
-    The Go CLI skeleton is active. macho, panic, proc, attach, and persist are implemented.
+    The Go CLI skeleton is active. macho, panic, proc, attach, persist, tcc, es, and vpn are implemented.
     Remaining feature commands are routed first, then filled in by milestone.
     The existing ./macscope.zsh remains the proof-of-concept fallback during the port.

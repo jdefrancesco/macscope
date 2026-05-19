@@ -29,6 +29,9 @@ func TestRunHelp(t *testing.T) {
 		"macscope macho [--json] [--full] [--triage] <path>",
 		"macscope panic --last | --file <panic-file> | --since 48h [--json]",
 		"macscope persist [--json] [--dir <launchd-dir>]",
+		"macscope tcc [--json] [--last 30m] | --watch",
+		"macscope es [--json] [--last 30m] | --watch",
+		"macscope vpn [--json] [--last 60m] [vpn-name]",
 	} {
 		if !strings.Contains(stdout.String(), want) {
 			t.Fatalf("Run(help) output missing %q:\n%s", want, stdout.String())

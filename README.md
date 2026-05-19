@@ -10,6 +10,7 @@ Current status:
 - `macscope panic` is implemented in Go.
 - `macscope proc` and `macscope attach` are implemented in Go.
 - `macscope persist` is implemented in Go.
+- `macscope tcc`, `macscope es`, and `macscope vpn` are implemented in Go.
 - Remaining feature commands are recognized in Go, then implemented incrementally by milestone.
 
 ## Build And Run
@@ -24,6 +25,9 @@ go run ./cmd/macscope panic --file testdata/panic/watchdog.panic
 go run ./cmd/macscope proc <pid-or-name>
 go run ./cmd/macscope attach <pid>
 go run ./cmd/macscope persist
+go run ./cmd/macscope tcc --last 30m
+go run ./cmd/macscope es --last 30m
+go run ./cmd/macscope vpn
 go test ./...
 go vet ./...
 ```
@@ -47,10 +51,11 @@ macscope macho [--json] [--full] [--triage] <path>
 macscope proc [--json] <pid-or-name>
 macscope attach [--json] [--last 30m] <pid>
 macscope persist [--json] [--dir <launchd-dir>]
-macscope tcc --last 30m
+macscope tcc [--json] [--last 30m]
 macscope tcc --watch
-macscope es --last 30m
-macscope vpn [vpn-name]
+macscope es [--json] [--last 30m]
+macscope es --watch
+macscope vpn [--json] [--last 60m] [vpn-name]
 macscope panic --last [--json]
 macscope panic --file <panic-file> [--json]
 macscope panic --since 48h [--json]
@@ -60,7 +65,7 @@ macscope timeline --pid <pid>
 During the port, recognized-but-unimplemented Go commands point back to the zsh fallback:
 
 ```sh
-./macscope.zsh tcc --last 30m
+./macscope.zsh timeline --pid 123
 ```
 
 ## macho
@@ -122,6 +127,24 @@ Default directories:
 - `~/Library/LaunchAgents`
 
 The command is read-only. It does not unload, delete, quarantine, or modify launchd jobs. Findings call out user-writable program paths, shell-based jobs, downloader/URL arguments, `RunAtLoad`, and `KeepAlive` state.
+
+## tcc
+
+`macscope tcc [--json] [--last 30m]` parses recent unified logs for TCC/privacy events and reports `TCC_DENIAL` findings with evidence strings.
+
+`macscope tcc --watch` streams matching unified logs directly. JSON is intentionally limited to bounded `--last` queries.
+
+## es
+
+`macscope es [--json] [--last 30m]` parses recent EndpointSecurity entitlement and `/dev/es` access logs, including `ENDPOINTSECURITY_DENIAL` findings.
+
+`macscope es --watch` streams matching unified logs directly. The first Go version does not require EndpointSecurity entitlements and does not include a privileged ES agent.
+
+## vpn
+
+`macscope vpn [--json] [--last 60m] [vpn-name]` collects read-only VPN triage evidence from `scutil`, `ifconfig`, `route`, `netstat`, `log show`, and `pmset`.
+
+It reports configured VPN services, selected VPN status when a name is provided, utun interfaces, DNS/proxy/route evidence in JSON, recent VPN log lines, sleep/wake correlation, and conservative findings for disconnected requested services, absent utun interfaces, and VPN log errors or disconnects.
 
 ## Safety Model
 

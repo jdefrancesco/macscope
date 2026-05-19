@@ -1,0 +1,17 @@
+Example:
+
+  macscope vpn
+  macscope vpn "Work VPN"
+  macscope vpn --json --last 60m "Work VPN"
+
+Purpose:
+
+  Inspect VPN service state, utun interfaces, DNS/proxy/routes, recent VPN logs, and sleep/wake correlation.
+
+Native tools:
+
+  scutil, ifconfig, route, netstat, log, pmset
+
+Notes:
+
+  This command is read-only. It reports likely causes and evidence; it does not change network settings.

@@ -99,21 +99,24 @@ func commands() []commandSpec {
 		},
 		{
 			Name:      "tcc",
-			Usage:     "macscope tcc --last 30m | --watch",
+			Usage:     "macscope tcc [--json] [--last 30m] | --watch",
 			Summary:   "Inspect recent or live TCC/privacy denial logs.",
 			Milestone: "Milestone 6: tcc",
+			Run:       runTCC,
 		},
 		{
 			Name:      "es",
-			Usage:     "macscope es --last 30m | --watch",
+			Usage:     "macscope es [--json] [--last 30m] | --watch",
 			Summary:   "Inspect EndpointSecurity entitlement and access-denial logs.",
 			Milestone: "Milestone 6: es",
+			Run:       runES,
 		},
 		{
 			Name:      "vpn",
-			Usage:     "macscope vpn [vpn-name]",
+			Usage:     "macscope vpn [--json] [--last 60m] [vpn-name]",
 			Summary:   "Inspect VPN service state, utun interfaces, DNS, proxy, routes, and recent logs.",
 			Milestone: "Milestone 6: vpn",
+			Run:       runVPN,
 		},
 		{
 			Name:      "panic",
@@ -141,7 +144,7 @@ func printHelp(w io.Writer) {
 	}
 	fmt.Fprintln(w)
 	fmt.Fprintln(w, "Status:")
-	fmt.Fprintln(w, "  The Go CLI skeleton is active. macho, panic, proc, attach, and persist are implemented.")
+	fmt.Fprintln(w, "  The Go CLI skeleton is active. macho, panic, proc, attach, persist, tcc, es, and vpn are implemented.")
 	fmt.Fprintln(w, "  Remaining feature commands are routed first, then filled in by milestone.")
 	fmt.Fprintln(w, "  The existing ./macscope.zsh remains the proof-of-concept fallback during the port.")
 }

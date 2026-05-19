@@ -1,0 +1,17 @@
+Example:
+
+  macscope es --last 30m
+  macscope es --json --last 30m
+  macscope es --watch
+
+Purpose:
+
+  Inspect EndpointSecurity entitlement and /dev/es access logs using unified logging.
+
+Native tool:
+
+  log show / log stream
+
+Notes:
+
+  The Go CLI does not require EndpointSecurity entitlements and does not run a privileged ES agent.
