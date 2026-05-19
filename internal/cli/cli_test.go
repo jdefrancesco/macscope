@@ -27,7 +27,7 @@ func TestRunHelp(t *testing.T) {
 	for _, want := range []string{
 		"macscope <command> [flags]",
 		"macscope macho [--json] [--full] <path>",
-		"macscope panic --last",
+		"macscope panic --last | --file <panic-file> | --since 48h [--json]",
 	} {
 		if !strings.Contains(stdout.String(), want) {
 			t.Fatalf("Run(help) output missing %q:\n%s", want, stdout.String())
@@ -59,7 +59,7 @@ func TestRunRecognizedUnimplementedCommand(t *testing.T) {
 	var stdout bytes.Buffer
 	var stderr bytes.Buffer
 
-	code := Run(context.Background(), []string{"panic", "--json"}, output.Streams{
+	code := Run(context.Background(), []string{"timeline", "--pid", "123"}, output.Streams{
 		Out: &stdout,
 		Err: &stderr,
 	})
@@ -71,9 +71,9 @@ func TestRunRecognizedUnimplementedCommand(t *testing.T) {
 		t.Fatalf("Run(unimplemented) stdout = %q, want empty", stdout.String())
 	}
 	for _, want := range []string{
-		`"panic" is recognized`,
-		"Milestone 3: panic",
-		"./macscope.zsh panic --json",
+		`"timeline" is recognized`,
+		"Milestone 7: timeline and correlation",
+		"./macscope.zsh timeline --pid 123",
 	} {
 		if !strings.Contains(stderr.String(), want) {
 			t.Fatalf("Run(unimplemented) stderr missing %q:\n%s", want, stderr.String())

@@ -7,6 +7,7 @@ Current status:
 - `macscope.zsh` remains the live proof-of-concept implementation.
 - `cmd/macscope` contains the Go CLI skeleton and stable command routing.
 - `macscope macho` is implemented in Go.
+- `macscope panic` is implemented in Go.
 - Remaining feature commands are recognized in Go, then implemented incrementally by milestone.
 
 ## Build And Run
@@ -16,8 +17,19 @@ go run ./cmd/macscope help
 go run ./cmd/macscope version
 go run ./cmd/macscope macho /bin/ls
 go run ./cmd/macscope macho --json /bin/ls
+go run ./cmd/macscope panic --file testdata/panic/watchdog.panic
 go test ./...
 go vet ./...
+```
+
+The same workflows are available through `make`:
+
+```sh
+make help
+make build
+make test
+make vet
+make check
 ```
 
 The first live collectors will wrap native macOS tools with `exec.CommandContext`. Commands must capture stdout and stderr separately, use timeouts, and avoid shell interpolation with untrusted values.
@@ -25,7 +37,7 @@ The first live collectors will wrap native macOS tools with `exec.CommandContext
 ## Command Shape
 
 ```text
-macscope macho <path>
+macscope macho [--json] [--full] <path>
 macscope proc <pid-or-name>
 macscope attach <pid>
 macscope persist
@@ -33,10 +45,9 @@ macscope tcc --last 30m
 macscope tcc --watch
 macscope es --last 30m
 macscope vpn [vpn-name]
-macscope panic --last
-macscope panic --file <panic-file>
-macscope panic --since 48h
-macscope panic --json
+macscope panic --last [--json]
+macscope panic --file <panic-file> [--json]
+macscope panic --since 48h [--json]
 macscope timeline --pid <pid>
 ```
 
@@ -60,6 +71,20 @@ Native tools used:
 - `otool`
 
 Normal output is concise and evidence-driven. `--json` emits machine-readable output. `--full` includes raw command output in the JSON report for audit and debugging.
+
+## panic
+
+`macscope panic --last|--file <path>|--since <duration> [--json]` parses macOS panic reports and classifies watchdog/kernel reboot evidence.
+
+Inputs:
+
+- `--last` reads the newest `*.panic` report under `/Library/Logs/DiagnosticReports`.
+- `--file <path>` reads a specific panic report.
+- `--since <duration>` reads reports modified within a Go-style duration such as `30m` or `48h`.
+
+The parser extracts panic string, CPU number, caller address, watchdog timeout duration, macOS version, boot session UUID, installer/current phase, saved report path, SOCD marker presence, pre-OS markers, and display/dock/software-update indicators.
+
+Classifications are evidence-based. Watchdog reports can produce likely causes such as `BOOT_IOKIT_STALL` or `EXTERNAL_DISPLAY_OR_DOCK`, each with confidence and evidence strings.
 
 ## Safety Model
 

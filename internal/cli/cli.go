@@ -114,9 +114,10 @@ func commands() []commandSpec {
 		},
 		{
 			Name:      "panic",
-			Usage:     "macscope panic --last | --file <panic-file> | --since 48h | --json",
+			Usage:     "macscope panic --last | --file <panic-file> | --since 48h [--json]",
 			Summary:   "Parse panic logs and classify watchdog/kernel reboot evidence.",
 			Milestone: "Milestone 3: panic",
+			Run:       runPanic,
 		},
 		{
 			Name:      "timeline",
@@ -137,7 +138,7 @@ func printHelp(w io.Writer) {
 	}
 	fmt.Fprintln(w)
 	fmt.Fprintln(w, "Status:")
-	fmt.Fprintln(w, "  The Go CLI skeleton is active and macho is implemented.")
+	fmt.Fprintln(w, "  The Go CLI skeleton is active. macho and panic are implemented.")
 	fmt.Fprintln(w, "  Remaining feature commands are routed first, then filled in by milestone.")
 	fmt.Fprintln(w, "  The existing ./macscope.zsh remains the proof-of-concept fallback during the port.")
 }

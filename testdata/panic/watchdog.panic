@@ -1,0 +1,9 @@
+panic(cpu 2 caller 0xfffffe001234abcd): watchdog timeout: no checkins from watchdogd in 92 seconds
+bootsessionuuid: 01234567-89AB-CDEF-0123-456789ABCDEF
+osversion: 23G80,
+Current Phase = "IOKit Boot"
+PanicMedic Boot path active
+AppleDisplayCrossbar event near panic window
+Thunderbolt link reset
+Saved type '210' report panic-full at /Library/Logs/DiagnosticReports/panic-full-2026-05-19-142007.0003.panic
+SOCD report detected

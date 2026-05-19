@@ -1,0 +1,34 @@
+Example:
+
+  macscope panic --file testdata/panic/watchdog.panic
+
+Purpose:
+
+  Parse a macOS panic report and explain watchdog/kernel reboot evidence without changing system state.
+
+Inputs:
+
+  macscope panic --last
+  macscope panic --file <panic-file>
+  macscope panic --since 48h
+
+JSON:
+
+  macscope panic --json --file testdata/panic/watchdog.panic
+
+Output sections:
+
+  Panic Type
+    Classification such as WATCHDOG_TIMEOUT or KERNEL_PANIC, plus a concise summary.
+
+  Metadata
+    CPU, watchdog timeout duration, OS version, boot session UUID, current phase, caller, saved report path, and SOCD marker state when present.
+
+  Likely Causes
+    Evidence-backed suspected causes with confidence values, such as BOOT_IOKIT_STALL or EXTERNAL_DISPLAY_OR_DOCK.
+
+  Indicators
+    Display/dock, software update, IOKit Boot, PanicMedic, or pre-OS markers found in the report.
+
+  Next Checks
+    Calm follow-up checks based on the parsed evidence.

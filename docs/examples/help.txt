@@ -30,12 +30,12 @@ Expected shape:
         Inspect EndpointSecurity entitlement and access-denial logs.
     macscope vpn [vpn-name]
         Inspect VPN service state, utun interfaces, DNS, proxy, routes, and recent logs.
-    macscope panic --last | --file <panic-file> | --since 48h | --json
+    macscope panic --last | --file <panic-file> | --since 48h [--json]
         Parse panic logs and classify watchdog/kernel reboot evidence.
     macscope timeline --pid <pid>
         Correlate process, log, policy, and system events into one timeline.
 
   Status:
-    The Go CLI skeleton is active and macho is implemented.
+    The Go CLI skeleton is active. macho and panic are implemented.
     Remaining feature commands are routed first, then filled in by milestone.
     The existing ./macscope.zsh remains the proof-of-concept fallback during the port.
