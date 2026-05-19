@@ -3,6 +3,7 @@ Expected shape:
   make install PREFIX="$HOME/.local"
   make install-completions PREFIX="$HOME/.local"
   make install-man PREFIX="$HOME/.local"
+  make homebrew-formula VERSION=v0.1.0 URL=<release-url> SHA256=<sha256>
   make release VERSION=v0.1.0
 
 Install:
@@ -25,3 +26,9 @@ Release artifact:
 
   make release VERSION=v0.1.0
   make dist VERSION=v0.1.0 GOOS=darwin GOARCH=arm64
+
+Homebrew formula:
+
+  SHA256=$(cut -d ' ' -f1 dist/macscope_v0.1.0_darwin_arm64.tar.gz.sha256)
+  make homebrew-formula VERSION=v0.1.0 URL=https://example.com/macscope_v0.1.0_darwin_arm64.tar.gz SHA256="$SHA256"
+  make verify-homebrew-formula VERSION=v0.1.0 URL=https://example.com/macscope_v0.1.0_darwin_arm64.tar.gz SHA256="$SHA256"

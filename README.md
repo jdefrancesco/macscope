@@ -14,6 +14,7 @@ Current status:
 - `macscope timeline` is implemented in Go.
 - Shell completions are available for bash, zsh, and fish.
 - Make targets cover install/uninstall and local release archives.
+- Homebrew formula rendering is available under `packaging/homebrew/`.
 
 ## Build And Run
 
@@ -49,6 +50,7 @@ make check
 make install PREFIX="$HOME/.local"
 make install-completions PREFIX="$HOME/.local"
 make install-man PREFIX="$HOME/.local"
+make homebrew-formula VERSION=v0.1.0 URL=https://example.com/macscope_v0.1.0_darwin_arm64.tar.gz SHA256=<sha256>
 make release
 ```
 
@@ -130,6 +132,31 @@ make dist VERSION=v0.1.0 GOOS=darwin GOARCH=arm64
 ```
 
 CI runs the same `make check`, `make smoke`, and `make dist` paths on macOS.
+
+## Homebrew Formula
+
+`packaging/homebrew/macscope.rb` is a Homebrew formula template for the release tarball produced by `make dist`. Render a concrete formula into `dist/homebrew/macscope.rb` with:
+
+```sh
+make dist VERSION=v0.1.0 GOOS=darwin GOARCH=arm64
+SHA256=$(cut -d ' ' -f1 dist/macscope_v0.1.0_darwin_arm64.tar.gz.sha256)
+make homebrew-formula \
+  VERSION=v0.1.0 \
+  URL=https://example.com/macscope_v0.1.0_darwin_arm64.tar.gz \
+  SHA256="$SHA256"
+```
+
+The helper strips a leading `v` from `VERSION` for the formula's `version` field. The generated formula installs:
+
+- `macscope` into `bin`
+- bash, zsh, and fish completions
+- `macscope.1` into `man1`
+
+Verify the rendered formula shape and install paths with:
+
+```sh
+make verify-homebrew-formula VERSION=v0.1.0 URL=https://example.com/macscope_v0.1.0_darwin_arm64.tar.gz SHA256="$SHA256"
+```
 
 ## macho
 

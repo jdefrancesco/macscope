@@ -15,28 +15,33 @@ GOOS ?= $(shell $(GO) env GOOS)
 GOARCH ?= $(shell $(GO) env GOARCH)
 DIST_DIR ?= dist
 DIST_NAME := $(BIN)_$(VERSION)_$(GOOS)_$(GOARCH)
+HOMEBREW_VERSION ?= $(patsubst v%,%,$(VERSION))
+FORMULA ?= $(DIST_DIR)/homebrew/$(BIN).rb
+HOMEBREW_TEMPLATE ?= packaging/homebrew/$(BIN).rb
 LDFLAGS ?= -s -w -X github.com/jdefrancesco/macscope/internal/cli.version=$(VERSION) -X github.com/jdefrancesco/macscope/internal/cli.buildCommit=$(BUILD_COMMIT) -X github.com/jdefrancesco/macscope/internal/cli.buildDate=$(BUILD_DATE)
 
-.PHONY: help all build run fmt test vet smoke check install uninstall install-completions uninstall-completions install-man uninstall-man dist release clean
+.PHONY: help all build run fmt test vet smoke check install uninstall install-completions uninstall-completions install-man uninstall-man homebrew-formula verify-homebrew-formula dist release clean
 
 help:
 	@printf '%s\n' 'Targets:'
-	@printf '  %-22s %s\n' 'build' 'Build the macscope binary.'
-	@printf '  %-22s %s\n' 'run' 'Run macscope help through go run.'
-	@printf '  %-22s %s\n' 'fmt' 'Format Go files.'
-	@printf '  %-22s %s\n' 'test' 'Run Go tests, including command smoke tests.'
-	@printf '  %-22s %s\n' 'vet' 'Run go vet.'
-	@printf '  %-22s %s\n' 'smoke' 'Run command-level smoke tests.'
-	@printf '  %-22s %s\n' 'check' 'Run fmt, test, and vet.'
-	@printf '  %-22s %s\n' 'install' 'Install the binary under PREFIX.'
-	@printf '  %-22s %s\n' 'uninstall' 'Remove the installed binary under PREFIX.'
-	@printf '  %-22s %s\n' 'install-completions' 'Install bash, zsh, and fish completions.'
-	@printf '  %-22s %s\n' 'uninstall-completions' 'Remove installed completions.'
-	@printf '  %-22s %s\n' 'install-man' 'Install the macscope(1) manual page.'
-	@printf '  %-22s %s\n' 'uninstall-man' 'Remove the installed manual page.'
-	@printf '  %-22s %s\n' 'dist' 'Build a local release archive under dist/.'
-	@printf '  %-22s %s\n' 'release' 'Run checks and build release artifacts.'
-	@printf '  %-22s %s\n' 'clean' 'Remove local build artifacts.'
+	@printf '  %-25s %s\n' 'build' 'Build the macscope binary.'
+	@printf '  %-25s %s\n' 'run' 'Run macscope help through go run.'
+	@printf '  %-25s %s\n' 'fmt' 'Format Go files.'
+	@printf '  %-25s %s\n' 'test' 'Run Go tests, including command smoke tests.'
+	@printf '  %-25s %s\n' 'vet' 'Run go vet.'
+	@printf '  %-25s %s\n' 'smoke' 'Run command-level smoke tests.'
+	@printf '  %-25s %s\n' 'check' 'Run fmt, test, and vet.'
+	@printf '  %-25s %s\n' 'install' 'Install the binary under PREFIX.'
+	@printf '  %-25s %s\n' 'uninstall' 'Remove the installed binary under PREFIX.'
+	@printf '  %-25s %s\n' 'install-completions' 'Install bash, zsh, and fish completions.'
+	@printf '  %-25s %s\n' 'uninstall-completions' 'Remove installed completions.'
+	@printf '  %-25s %s\n' 'install-man' 'Install the macscope(1) manual page.'
+	@printf '  %-25s %s\n' 'uninstall-man' 'Remove the installed manual page.'
+	@printf '  %-25s %s\n' 'homebrew-formula' 'Render a Homebrew formula into dist/homebrew/.'
+	@printf '  %-25s %s\n' 'verify-homebrew-formula' 'Verify rendered Homebrew formula fields and install paths.'
+	@printf '  %-25s %s\n' 'dist' 'Build a local release archive under dist/.'
+	@printf '  %-25s %s\n' 'release' 'Run checks and build release artifacts.'
+	@printf '  %-25s %s\n' 'clean' 'Remove local build artifacts.'
 
 all: check build
 
@@ -86,6 +91,16 @@ install-man:
 
 uninstall-man:
 	rm -f "$(DESTDIR)$(MAN1DIR)/$(BIN).1"
+
+homebrew-formula:
+	@test -n "$(URL)" || { printf '%s\n' 'URL is required. Example: make homebrew-formula VERSION=v0.1.0 URL=https://example.com/macscope.tar.gz SHA256=<sha256>' >&2; exit 2; }
+	@test -n "$(SHA256)" || { printf '%s\n' 'SHA256 is required. Example: make homebrew-formula VERSION=v0.1.0 URL=https://example.com/macscope.tar.gz SHA256=<sha256>' >&2; exit 2; }
+	@mkdir -p "$(dir $(FORMULA))"
+	@MACSCOPE_VERSION="$(HOMEBREW_VERSION)" MACSCOPE_URL="$(URL)" MACSCOPE_SHA256="$(SHA256)" HOMEBREW_TEMPLATE="$(HOMEBREW_TEMPLATE)" HOMEBREW_FORMULA="$(FORMULA)" ruby packaging/homebrew/render_formula.rb
+	@printf 'Wrote %s\n' "$(FORMULA)"
+
+verify-homebrew-formula: homebrew-formula
+	@ruby packaging/homebrew/verify_formula.rb "$(FORMULA)" "$(HOMEBREW_VERSION)" "$(URL)" "$(SHA256)"
 
 dist:
 	rm -rf "$(DIST_DIR)/$(DIST_NAME)"

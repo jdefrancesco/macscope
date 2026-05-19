@@ -30,6 +30,13 @@ jobs:
       - name: Smoke
         run: make smoke
 
+      - name: Verify Homebrew Formula
+        run: |
+          make verify-homebrew-formula \
+            VERSION=ci-${{ github.sha }} \
+            URL=https://example.com/macscope_ci-${{ github.sha }}_darwin_arm64.tar.gz \
+            SHA256=0000000000000000000000000000000000000000000000000000000000000000
+
       - name: Build Release Archive
         run: make dist VERSION=ci-${{ github.sha }} GOOS=darwin GOARCH=arm64
 
