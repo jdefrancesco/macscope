@@ -92,9 +92,10 @@ func commands() []commandSpec {
 		},
 		{
 			Name:      "persist",
-			Usage:     "macscope persist",
+			Usage:     "macscope persist [--json] [--dir <launchd-dir>]",
 			Summary:   "Inspect launchd persistence locations and explain suspicious launch items.",
 			Milestone: "Milestone 5: persist",
+			Run:       runPersist,
 		},
 		{
 			Name:      "tcc",
@@ -140,7 +141,7 @@ func printHelp(w io.Writer) {
 	}
 	fmt.Fprintln(w)
 	fmt.Fprintln(w, "Status:")
-	fmt.Fprintln(w, "  The Go CLI skeleton is active. macho, panic, proc, and attach are implemented.")
+	fmt.Fprintln(w, "  The Go CLI skeleton is active. macho, panic, proc, attach, and persist are implemented.")
 	fmt.Fprintln(w, "  Remaining feature commands are routed first, then filled in by milestone.")
 	fmt.Fprintln(w, "  The existing ./macscope.zsh remains the proof-of-concept fallback during the port.")
 }

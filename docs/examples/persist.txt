@@ -1,0 +1,36 @@
+Example:
+
+  macscope persist
+
+Purpose:
+
+  Parse launchd LaunchAgent and LaunchDaemon property lists and explain suspicious persistence signals.
+
+Default directories:
+
+  /Library/LaunchAgents
+  /Library/LaunchDaemons
+  ~/Library/LaunchAgents
+
+Targeted directory:
+
+  macscope persist --dir testdata/launchd
+
+JSON:
+
+  macscope persist --json
+
+Output sections:
+
+  Launchd Persistence
+    Directory, parsed-job, and finding counts.
+
+  Findings
+    Evidence-backed categories such as USER_WRITABLE_PERSISTENCE, SHELL_LAUNCHD_JOB, NETWORK_DOWNLOADER_PERSISTENCE, RUN_AT_LOAD, or KEEPALIVE_ENABLED.
+
+  Jobs
+    Parsed labels and effective programs.
+
+Notes:
+
+  This command is read-only. It does not unload, delete, quarantine, or modify launchd jobs.

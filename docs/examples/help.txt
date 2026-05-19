@@ -22,7 +22,7 @@ Expected shape:
         Triage a running process by PID or name.
     macscope attach [--json] [--last 30m] <pid>
         Explain likely LLDB attach failures using signing, group, and log evidence.
-    macscope persist
+    macscope persist [--json] [--dir <launchd-dir>]
         Inspect launchd persistence locations and explain suspicious launch items.
     macscope tcc --last 30m | --watch
         Inspect recent or live TCC/privacy denial logs.
@@ -36,6 +36,6 @@ Expected shape:
         Correlate process, log, policy, and system events into one timeline.
 
   Status:
-    The Go CLI skeleton is active. macho, panic, proc, and attach are implemented.
+    The Go CLI skeleton is active. macho, panic, proc, attach, and persist are implemented.
     Remaining feature commands are routed first, then filled in by milestone.
     The existing ./macscope.zsh remains the proof-of-concept fallback during the port.

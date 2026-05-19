@@ -9,6 +9,7 @@ Current status:
 - `macscope macho` is implemented in Go.
 - `macscope panic` is implemented in Go.
 - `macscope proc` and `macscope attach` are implemented in Go.
+- `macscope persist` is implemented in Go.
 - Remaining feature commands are recognized in Go, then implemented incrementally by milestone.
 
 ## Build And Run
@@ -21,6 +22,7 @@ go run ./cmd/macscope macho --json /bin/ls
 go run ./cmd/macscope panic --file testdata/panic/watchdog.panic
 go run ./cmd/macscope proc <pid-or-name>
 go run ./cmd/macscope attach <pid>
+go run ./cmd/macscope persist
 go test ./...
 go vet ./...
 ```
@@ -43,7 +45,7 @@ The first live collectors will wrap native macOS tools with `exec.CommandContext
 macscope macho [--json] [--full] <path>
 macscope proc [--json] <pid-or-name>
 macscope attach [--json] [--last 30m] <pid>
-macscope persist
+macscope persist [--json] [--dir <launchd-dir>]
 macscope tcc --last 30m
 macscope tcc --watch
 macscope es --last 30m
@@ -105,6 +107,18 @@ The command is read-only. It does not attach to the process.
 - recent attach-relevant unified logs from `log show`
 
 The command does not bypass SIP, AMFI, TCC, hardened runtime, or taskgated policy. It reports evidence and next checks only.
+
+## persist
+
+`macscope persist [--json] [--dir <launchd-dir>]` parses launchd property lists and scores persistence findings with explicit evidence.
+
+Default directories:
+
+- `/Library/LaunchAgents`
+- `/Library/LaunchDaemons`
+- `~/Library/LaunchAgents`
+
+The command is read-only. It does not unload, delete, quarantine, or modify launchd jobs. Findings call out user-writable program paths, shell-based jobs, downloader/URL arguments, `RunAtLoad`, and `KeepAlive` state.
 
 ## Safety Model
 
