@@ -1,0 +1,19 @@
+Example:
+
+  macscope proc 1234
+
+Purpose:
+
+  Resolve a running process by PID or name, then summarize process identity and signing state.
+
+Native tools:
+
+  ps, pgrep, codesign
+
+JSON:
+
+  macscope proc --json 1234
+
+Notes:
+
+  This command is read-only and does not attach to the target process.

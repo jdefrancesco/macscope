@@ -18,9 +18,9 @@ Expected shape:
   Commands:
     macscope macho [--json] [--full] <path>
         Inspect binary/app identity, architecture, signing, Gatekeeper, xattrs, and linked libraries.
-    macscope proc <pid-or-name>
+    macscope proc [--json] <pid-or-name>
         Triage a running process by PID or name.
-    macscope attach <pid>
+    macscope attach [--json] [--last 30m] <pid>
         Explain likely LLDB attach failures using signing, group, and log evidence.
     macscope persist
         Inspect launchd persistence locations and explain suspicious launch items.
@@ -36,6 +36,6 @@ Expected shape:
         Correlate process, log, policy, and system events into one timeline.
 
   Status:
-    The Go CLI skeleton is active. macho and panic are implemented.
+    The Go CLI skeleton is active. macho, panic, proc, and attach are implemented.
     Remaining feature commands are routed first, then filled in by milestone.
     The existing ./macscope.zsh remains the proof-of-concept fallback during the port.

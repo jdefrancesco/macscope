@@ -1,0 +1,19 @@
+Example:
+
+  macscope attach 1234
+
+Purpose:
+
+  Explain likely LLDB attach failures from process identity, developer group membership, signing state, and recent policy logs.
+
+Native tools:
+
+  ps, dseditgroup, codesign, log
+
+JSON:
+
+  macscope attach --json --last 30m 1234
+
+Notes:
+
+  This command does not bypass macOS policy. It reports evidence such as taskgated, task_for_pid, tccd, amfid, or syspolicyd denial signals.

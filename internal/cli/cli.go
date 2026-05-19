@@ -78,15 +78,17 @@ func commands() []commandSpec {
 		},
 		{
 			Name:      "proc",
-			Usage:     "macscope proc <pid-or-name>",
+			Usage:     "macscope proc [--json] <pid-or-name>",
 			Summary:   "Triage a running process by PID or name.",
 			Milestone: "Milestone 4: attach/process triage",
+			Run:       runProc,
 		},
 		{
 			Name:      "attach",
-			Usage:     "macscope attach <pid>",
+			Usage:     "macscope attach [--json] [--last 30m] <pid>",
 			Summary:   "Explain likely LLDB attach failures using signing, group, and log evidence.",
 			Milestone: "Milestone 4: attach",
+			Run:       runAttach,
 		},
 		{
 			Name:      "persist",
@@ -138,7 +140,7 @@ func printHelp(w io.Writer) {
 	}
 	fmt.Fprintln(w)
 	fmt.Fprintln(w, "Status:")
-	fmt.Fprintln(w, "  The Go CLI skeleton is active. macho and panic are implemented.")
+	fmt.Fprintln(w, "  The Go CLI skeleton is active. macho, panic, proc, and attach are implemented.")
 	fmt.Fprintln(w, "  Remaining feature commands are routed first, then filled in by milestone.")
 	fmt.Fprintln(w, "  The existing ./macscope.zsh remains the proof-of-concept fallback during the port.")
 }

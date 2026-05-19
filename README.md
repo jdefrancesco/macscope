@@ -8,6 +8,7 @@ Current status:
 - `cmd/macscope` contains the Go CLI skeleton and stable command routing.
 - `macscope macho` is implemented in Go.
 - `macscope panic` is implemented in Go.
+- `macscope proc` and `macscope attach` are implemented in Go.
 - Remaining feature commands are recognized in Go, then implemented incrementally by milestone.
 
 ## Build And Run
@@ -18,6 +19,8 @@ go run ./cmd/macscope version
 go run ./cmd/macscope macho /bin/ls
 go run ./cmd/macscope macho --json /bin/ls
 go run ./cmd/macscope panic --file testdata/panic/watchdog.panic
+go run ./cmd/macscope proc <pid-or-name>
+go run ./cmd/macscope attach <pid>
 go test ./...
 go vet ./...
 ```
@@ -38,8 +41,8 @@ The first live collectors will wrap native macOS tools with `exec.CommandContext
 
 ```text
 macscope macho [--json] [--full] <path>
-macscope proc <pid-or-name>
-macscope attach <pid>
+macscope proc [--json] <pid-or-name>
+macscope attach [--json] [--last 30m] <pid>
 macscope persist
 macscope tcc --last 30m
 macscope tcc --watch
@@ -85,6 +88,23 @@ Inputs:
 The parser extracts panic string, CPU number, caller address, watchdog timeout duration, macOS version, boot session UUID, installer/current phase, saved report path, SOCD marker presence, pre-OS markers, and display/dock/software-update indicators.
 
 Classifications are evidence-based. Watchdog reports can produce likely causes such as `BOOT_IOKIT_STALL` or `EXTERNAL_DISPLAY_OR_DOCK`, each with confidence and evidence strings.
+
+## proc
+
+`macscope proc [--json] <pid-or-name>` resolves a running process with `ps` and `pgrep`, summarizes PID/PPID/user/group/state/path/command, and checks executable signing when a path is available.
+
+The command is read-only. It does not attach to the process.
+
+## attach
+
+`macscope attach [--json] [--last 30m] <pid>` explains likely LLDB attach failures using:
+
+- process identity from `ps`
+- developer group membership from `dseditgroup`
+- target signing state from `codesign`
+- recent attach-relevant unified logs from `log show`
+
+The command does not bypass SIP, AMFI, TCC, hardened runtime, or taskgated policy. It reports evidence and next checks only.
 
 ## Safety Model
 
