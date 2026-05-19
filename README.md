@@ -6,13 +6,16 @@ Current status:
 
 - `macscope.zsh` remains the live proof-of-concept implementation.
 - `cmd/macscope` contains the Go CLI skeleton and stable command routing.
-- Feature commands are recognized in Go, then implemented incrementally by milestone.
+- `macscope macho` is implemented in Go.
+- Remaining feature commands are recognized in Go, then implemented incrementally by milestone.
 
 ## Build And Run
 
 ```sh
 go run ./cmd/macscope help
 go run ./cmd/macscope version
+go run ./cmd/macscope macho /bin/ls
+go run ./cmd/macscope macho --json /bin/ls
 go test ./...
 go vet ./...
 ```
@@ -40,9 +43,23 @@ macscope timeline --pid <pid>
 During the port, recognized-but-unimplemented Go commands point back to the zsh fallback:
 
 ```sh
-./macscope.zsh macho /bin/ls
 ./macscope.zsh tcc --last 30m
 ```
+
+## macho
+
+`macscope macho [--json] [--full] <path>` inspects a Mach-O binary or `.app` bundle. It resolves the bundle executable, hashes the binary, detects architectures, checks code signing and Gatekeeper policy, lists extended attributes, and records linked libraries.
+
+Native tools used:
+
+- `file`
+- `lipo`
+- `codesign`
+- `spctl`
+- `xattr`
+- `otool`
+
+Normal output is concise and evidence-driven. `--json` emits machine-readable output. `--full` includes raw command output in the JSON report for audit and debugging.
 
 ## Safety Model
 

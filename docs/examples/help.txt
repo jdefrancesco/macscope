@@ -16,7 +16,7 @@ Expected shape:
     macscope version
 
   Commands:
-    macscope macho <path>
+    macscope macho [--json] [--full] <path>
         Inspect binary/app identity, architecture, signing, Gatekeeper, xattrs, and linked libraries.
     macscope proc <pid-or-name>
         Triage a running process by PID or name.
@@ -34,3 +34,8 @@ Expected shape:
         Parse panic logs and classify watchdog/kernel reboot evidence.
     macscope timeline --pid <pid>
         Correlate process, log, policy, and system events into one timeline.
+
+  Status:
+    The Go CLI skeleton is active and macho is implemented.
+    Remaining feature commands are routed first, then filled in by milestone.
+    The existing ./macscope.zsh remains the proof-of-concept fallback during the port.

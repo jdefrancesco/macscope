@@ -71,9 +71,10 @@ func commands() []commandSpec {
 	return []commandSpec{
 		{
 			Name:      "macho",
-			Usage:     "macscope macho <path>",
+			Usage:     "macscope macho [--json] [--full] <path>",
 			Summary:   "Inspect binary/app identity, architecture, signing, Gatekeeper, xattrs, and linked libraries.",
 			Milestone: "Milestone 2: macho",
+			Run:       runMacho,
 		},
 		{
 			Name:      "proc",
@@ -136,8 +137,9 @@ func printHelp(w io.Writer) {
 	}
 	fmt.Fprintln(w)
 	fmt.Fprintln(w, "Status:")
-	fmt.Fprintln(w, "  The Go CLI skeleton is active. Feature commands are routed first, then filled in by milestone.")
-	fmt.Fprintln(w, "  The existing ./macscope.zsh remains the live proof-of-concept fallback during the port.")
+	fmt.Fprintln(w, "  The Go CLI skeleton is active and macho is implemented.")
+	fmt.Fprintln(w, "  Remaining feature commands are routed first, then filled in by milestone.")
+	fmt.Fprintln(w, "  The existing ./macscope.zsh remains the proof-of-concept fallback during the port.")
 }
 
 func printUsage(w io.Writer) {

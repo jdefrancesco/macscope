@@ -1,0 +1,39 @@
+Example:
+
+  macscope macho /bin/ls
+
+Purpose:
+
+  Inspect a Mach-O binary or .app bundle without changing system state.
+
+Native tools:
+
+  file, lipo, codesign, spctl, xattr, otool
+
+Output sections:
+
+  Target
+    Input path, resolved binary path, size, and SHA-256.
+
+  Identity
+    File type and detected architectures.
+
+  Signature / Policy
+    Code signing identifier, team ID, signing authorities, codesign verification, and Gatekeeper assessment.
+
+  Extended Attributes
+    Attributes such as com.apple.quarantine when present.
+
+  Linked Libraries
+    Libraries reported by otool -L.
+
+  Findings
+    Explainable categories such as UNSIGNED_BINARY, INVALID_SIGNATURE, GATEKEEPER_REJECTED, or QUARANTINE_PRESENT.
+
+JSON:
+
+  macscope macho --json /bin/ls
+
+Full evidence:
+
+  macscope macho --json --full /bin/ls

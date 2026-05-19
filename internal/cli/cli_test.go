@@ -26,7 +26,7 @@ func TestRunHelp(t *testing.T) {
 	}
 	for _, want := range []string{
 		"macscope <command> [flags]",
-		"macscope macho <path>",
+		"macscope macho [--json] [--full] <path>",
 		"macscope panic --last",
 	} {
 		if !strings.Contains(stdout.String(), want) {
