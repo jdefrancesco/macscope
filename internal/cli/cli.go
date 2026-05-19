@@ -144,9 +144,6 @@ func printHelp(w io.Writer) {
 		fmt.Fprintf(w, "      %s\n", cmd.Summary)
 	}
 	fmt.Fprintln(w)
-	fmt.Fprintln(w, "Status:")
-	fmt.Fprintln(w, "  The Go CLI skeleton is active. macho, panic, proc, attach, persist, tcc, es, vpn, and timeline are implemented.")
-	fmt.Fprintln(w, "  The existing ./macscope.zsh remains the proof-of-concept fallback during the port.")
 }
 
 func printUsage(w io.Writer) {
