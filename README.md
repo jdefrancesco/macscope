@@ -48,6 +48,7 @@ make smoke
 make check
 make install PREFIX="$HOME/.local"
 make install-completions PREFIX="$HOME/.local"
+make install-man PREFIX="$HOME/.local"
 make release
 ```
 
@@ -112,6 +113,13 @@ Shell completions are installed separately so the binary install stays predictab
 ```sh
 make install-completions PREFIX="$HOME/.local"
 make uninstall-completions PREFIX="$HOME/.local"
+```
+
+The section-1 manual page is also installed separately:
+
+```sh
+make install-man PREFIX="$HOME/.local"
+make uninstall-man PREFIX="$HOME/.local"
 ```
 
 `make release` runs checks and writes a tarball plus SHA-256 checksum under `dist/`. Override `VERSION`, `GOOS`, or `GOARCH` for explicit release builds:

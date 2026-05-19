@@ -1,0 +1,191 @@
+.Dd May 19, 2026
+.Dt MACSCOPE 1
+.Os
+.Sh NAME
+.Nm macscope
+.Nd macOS introspection and triage toolkit
+.Sh SYNOPSIS
+.Nm
+.Cm help
+.Nm
+.Cm version
+.Op Fl -json
+.Nm
+.Cm macho
+.Op Fl -json
+.Op Fl -full
+.Op Fl -triage
+.Ar path
+.Nm
+.Cm proc
+.Op Fl -json
+.Ar pid-or-name
+.Nm
+.Cm attach
+.Op Fl -json
+.Op Fl -last Ar duration
+.Ar pid
+.Nm
+.Cm persist
+.Op Fl -json
+.Op Fl -dir Ar launchd-dir
+.Nm
+.Cm tcc
+.Op Fl -json
+.Op Fl -last Ar duration
+.Nm
+.Cm tcc
+.Fl -watch
+.Nm
+.Cm es
+.Op Fl -json
+.Op Fl -last Ar duration
+.Nm
+.Cm es
+.Fl -watch
+.Nm
+.Cm vpn
+.Op Fl -json
+.Op Fl -last Ar duration
+.Op Ar vpn-name
+.Nm
+.Cm panic
+.Fl -last
+.Op Fl -json
+.Nm
+.Cm panic
+.Fl -file Ar panic-file
+.Op Fl -json
+.Nm
+.Cm panic
+.Fl -since Ar duration
+.Op Fl -json
+.Nm
+.Cm timeline
+.Fl -pid Ar pid
+.Op Fl -last Ar duration
+.Op Fl -json | Fl -jsonl
+.Nm
+.Cm completion
+.Ar bash | zsh | fish
+.Sh DESCRIPTION
+.Nm
+is a read-only macOS diagnostics CLI for process, binary, signing,
+policy, panic, persistence, VPN, and unified-log triage.
+It is designed for defensive introspection and evidence-driven output.
+.Pp
+.Nm
+does not bypass SIP, AMFI, TCC, Gatekeeper, taskgated, EndpointSecurity,
+or hardened runtime policy.
+It reports observed evidence and next checks rather than modifying system
+security state.
+.Sh COMMANDS
+.Bl -tag -width Ds
+.It Cm version Op Fl -json
+Show build version, commit, build date, Go version, and target platform.
+.It Cm macho Op Fl -json Op Fl -full Op Fl -triage Ar path
+Inspect a Mach-O binary or app bundle.
+The command reports file identity, architectures, signing, Gatekeeper
+assessment, extended attributes, linked libraries, and evidence-backed
+findings.
+.Fl -triage
+flag prints a compact 0-100 score with signals and next actions.
+.It Cm proc Op Fl -json Ar pid-or-name
+Resolve a running process using native process tools, summarize identity
+fields, and check executable signing when a path is available.
+.It Cm attach Op Fl -json Op Fl -last Ar duration Ar pid
+Explain likely LLDB attach failures using process identity, developer group
+membership, signing state, and recent attach-relevant unified logs.
+.It Cm persist Op Fl -json Op Fl -dir Ar launchd-dir
+Inspect launchd LaunchAgent and LaunchDaemon plists and score suspicious
+persistence traits with explicit evidence.
+.It Cm tcc Op Fl -json Op Fl -last Ar duration
+Parse recent unified logs for TCC and privacy denial evidence.
+.It Cm tcc Fl -watch
+Stream matching TCC/privacy logs.
+.It Cm es Op Fl -json Op Fl -last Ar duration
+Parse recent EndpointSecurity entitlement and access-denial logs.
+.It Cm es Fl -watch
+Stream matching EndpointSecurity logs.
+.It Cm vpn Op Fl -json Op Fl -last Ar duration Op Ar vpn-name
+Collect VPN service state, utun interfaces, DNS, proxy, route, recent log,
+and sleep/wake evidence.
+.It Cm panic Fl -last Op Fl -json
+Parse the newest panic report under
+.Pa /Library/Logs/DiagnosticReports .
+.It Cm panic Fl -file Ar panic-file Op Fl -json
+Parse a specific panic report.
+.It Cm panic Fl -since Ar duration Op Fl -json
+Parse panic reports modified within a Go-style duration such as
+.Ql 30m
+or
+.Ql 48h .
+.It Cm timeline Fl -pid Ar pid Op Fl -last Ar duration Op Fl -json | Fl -jsonl
+Correlate process identity, signing state, and attach/policy-related log
+events into normalized timeline events.
+.It Cm completion Ar bash | zsh | fish
+Generate shell completion scripts.
+.El
+.Sh OUTPUT
+Human output is concise and evidence-driven.
+Commands that produce structured reports support
+.Fl -json
+where noted.
+.Cm timeline
+command also supports
+.Fl -jsonl
+for one normalized event per line.
+.Pp
+Set
+.Ev NO_COLOR=1
+or
+.Ev MACSCOPE_NO_COLOR=1
+to disable ANSI styling in human output.
+.Sh ENVIRONMENT
+.Bl -tag -width Ds
+.It Ev NO_COLOR
+Disable ANSI color when set to any value.
+.It Ev MACSCOPE_NO_COLOR
+Disable ANSI color when set to any value.
+.El
+.Sh FILES
+.Bl -tag -width Ds
+.It Pa /Library/Logs/DiagnosticReports/*.panic
+Default panic report search path.
+.It Pa /Library/LaunchAgents
+Default launchd persistence search path.
+.It Pa /Library/LaunchDaemons
+Default launchd persistence search path.
+.It Pa ~/Library/LaunchAgents
+Default per-user launchd persistence search path.
+.El
+.Sh EXIT STATUS
+.Ex -std
+.Pp
+.Nm
+returns 2 for command-line usage errors and unknown commands.
+.Sh EXAMPLES
+.Bd -literal -offset indent
+macscope macho --triage /bin/ls
+macscope panic --file testdata/panic/watchdog.panic
+macscope proc WindowServer
+macscope attach 123
+macscope persist --json
+macscope tcc --last 30m
+macscope vpn
+macscope timeline --pid 123 --jsonl
+source <(macscope completion zsh)
+.Ed
+.Sh NATIVE TOOLS
+.Nm
+wraps supported macOS tools such as
+.Nm codesign ,
+.Nm file ,
+.Nm ifconfig ,
+.Nm lipo ,
+.Nm log ,
+.Nm otool ,
+.Nm ps ,
+.Nm scutil ,
+and
+.Nm spctl .

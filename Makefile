@@ -7,6 +7,7 @@ DATADIR ?= $(PREFIX)/share
 BASH_COMPLETION_DIR ?= $(DATADIR)/bash-completion/completions
 ZSH_COMPLETION_DIR ?= $(DATADIR)/zsh/site-functions
 FISH_COMPLETION_DIR ?= $(DATADIR)/fish/vendor_completions.d
+MAN1DIR ?= $(DATADIR)/man/man1
 VERSION ?= $(shell git describe --tags --always --dirty 2>/dev/null || printf dev)
 BUILD_COMMIT ?= $(shell git rev-parse --short HEAD 2>/dev/null || printf unknown)
 BUILD_DATE ?= $(shell date -u +%Y-%m-%dT%H:%M:%SZ)
@@ -16,7 +17,7 @@ DIST_DIR ?= dist
 DIST_NAME := $(BIN)_$(VERSION)_$(GOOS)_$(GOARCH)
 LDFLAGS ?= -s -w -X github.com/jdefrancesco/macscope/internal/cli.version=$(VERSION) -X github.com/jdefrancesco/macscope/internal/cli.buildCommit=$(BUILD_COMMIT) -X github.com/jdefrancesco/macscope/internal/cli.buildDate=$(BUILD_DATE)
 
-.PHONY: help all build run fmt test vet smoke check install uninstall install-completions uninstall-completions dist release clean
+.PHONY: help all build run fmt test vet smoke check install uninstall install-completions uninstall-completions install-man uninstall-man dist release clean
 
 help:
 	@printf '%s\n' 'Targets:'
@@ -31,6 +32,8 @@ help:
 	@printf '  %-22s %s\n' 'uninstall' 'Remove the installed binary under PREFIX.'
 	@printf '  %-22s %s\n' 'install-completions' 'Install bash, zsh, and fish completions.'
 	@printf '  %-22s %s\n' 'uninstall-completions' 'Remove installed completions.'
+	@printf '  %-22s %s\n' 'install-man' 'Install the macscope(1) manual page.'
+	@printf '  %-22s %s\n' 'uninstall-man' 'Remove the installed manual page.'
 	@printf '  %-22s %s\n' 'dist' 'Build a local release archive under dist/.'
 	@printf '  %-22s %s\n' 'release' 'Run checks and build release artifacts.'
 	@printf '  %-22s %s\n' 'clean' 'Remove local build artifacts.'
@@ -77,12 +80,21 @@ uninstall-completions:
 	rm -f "$(DESTDIR)$(ZSH_COMPLETION_DIR)/_$(BIN)"
 	rm -f "$(DESTDIR)$(FISH_COMPLETION_DIR)/$(BIN).fish"
 
+install-man:
+	install -d "$(DESTDIR)$(MAN1DIR)"
+	install -m 0644 docs/man/$(BIN).1 "$(DESTDIR)$(MAN1DIR)/$(BIN).1"
+
+uninstall-man:
+	rm -f "$(DESTDIR)$(MAN1DIR)/$(BIN).1"
+
 dist:
 	rm -rf "$(DIST_DIR)/$(DIST_NAME)"
 	mkdir -p "$(DIST_DIR)/$(DIST_NAME)/completions"
+	mkdir -p "$(DIST_DIR)/$(DIST_NAME)/man/man1"
 	GOOS=$(GOOS) GOARCH=$(GOARCH) $(GO) build -ldflags "$(LDFLAGS)" -o "$(DIST_DIR)/$(DIST_NAME)/$(BIN)" $(CMD)
 	cp README.md "$(DIST_DIR)/$(DIST_NAME)/README.md"
 	cp -R docs "$(DIST_DIR)/$(DIST_NAME)/docs"
+	cp docs/man/$(BIN).1 "$(DIST_DIR)/$(DIST_NAME)/man/man1/$(BIN).1"
 	$(GO) run $(CMD) completion bash > "$(DIST_DIR)/$(DIST_NAME)/completions/$(BIN).bash"
 	$(GO) run $(CMD) completion zsh > "$(DIST_DIR)/$(DIST_NAME)/completions/_$(BIN)"
 	$(GO) run $(CMD) completion fish > "$(DIST_DIR)/$(DIST_NAME)/completions/$(BIN).fish"

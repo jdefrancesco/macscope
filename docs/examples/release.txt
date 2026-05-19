@@ -2,6 +2,7 @@ Expected shape:
 
   make install PREFIX="$HOME/.local"
   make install-completions PREFIX="$HOME/.local"
+  make install-man PREFIX="$HOME/.local"
   make release VERSION=v0.1.0
 
 Install:
@@ -14,6 +15,11 @@ Completions:
 
   make install-completions PREFIX="$HOME/.local"
   make uninstall-completions PREFIX="$HOME/.local"
+
+Manual page:
+
+  make install-man PREFIX="$HOME/.local"
+  make uninstall-man PREFIX="$HOME/.local"
 
 Release artifact:
 
