@@ -1,24 +1,42 @@
 GO ?= go
 BIN ?= macscope
 CMD := ./cmd/macscope
+PREFIX ?= /usr/local
+BINDIR ?= $(PREFIX)/bin
+DATADIR ?= $(PREFIX)/share
+BASH_COMPLETION_DIR ?= $(DATADIR)/bash-completion/completions
+ZSH_COMPLETION_DIR ?= $(DATADIR)/zsh/site-functions
+FISH_COMPLETION_DIR ?= $(DATADIR)/fish/vendor_completions.d
+VERSION ?= $(shell git describe --tags --always --dirty 2>/dev/null || printf dev)
+GOOS ?= $(shell $(GO) env GOOS)
+GOARCH ?= $(shell $(GO) env GOARCH)
+DIST_DIR ?= dist
+DIST_NAME := $(BIN)_$(VERSION)_$(GOOS)_$(GOARCH)
+LDFLAGS ?= -s -w -X github.com/jdefrancesco/macscope/internal/cli.version=$(VERSION)
 
-.PHONY: help all build run fmt test vet smoke check clean
+.PHONY: help all build run fmt test vet smoke check install uninstall install-completions uninstall-completions dist release clean
 
 help:
 	@printf '%s\n' 'Targets:'
-	@printf '  %-10s %s\n' 'build' 'Build the macscope binary.'
-	@printf '  %-10s %s\n' 'run' 'Run macscope help through go run.'
-	@printf '  %-10s %s\n' 'fmt' 'Format Go files.'
-	@printf '  %-10s %s\n' 'test' 'Run Go tests, including command smoke tests.'
-	@printf '  %-10s %s\n' 'vet' 'Run go vet.'
-	@printf '  %-10s %s\n' 'smoke' 'Run command-level smoke tests.'
-	@printf '  %-10s %s\n' 'check' 'Run fmt, test, and vet.'
-	@printf '  %-10s %s\n' 'clean' 'Remove local build artifacts.'
+	@printf '  %-22s %s\n' 'build' 'Build the macscope binary.'
+	@printf '  %-22s %s\n' 'run' 'Run macscope help through go run.'
+	@printf '  %-22s %s\n' 'fmt' 'Format Go files.'
+	@printf '  %-22s %s\n' 'test' 'Run Go tests, including command smoke tests.'
+	@printf '  %-22s %s\n' 'vet' 'Run go vet.'
+	@printf '  %-22s %s\n' 'smoke' 'Run command-level smoke tests.'
+	@printf '  %-22s %s\n' 'check' 'Run fmt, test, and vet.'
+	@printf '  %-22s %s\n' 'install' 'Install the binary under PREFIX.'
+	@printf '  %-22s %s\n' 'uninstall' 'Remove the installed binary under PREFIX.'
+	@printf '  %-22s %s\n' 'install-completions' 'Install bash, zsh, and fish completions.'
+	@printf '  %-22s %s\n' 'uninstall-completions' 'Remove installed completions.'
+	@printf '  %-22s %s\n' 'dist' 'Build a local release archive under dist/.'
+	@printf '  %-22s %s\n' 'release' 'Run checks and build release artifacts.'
+	@printf '  %-22s %s\n' 'clean' 'Remove local build artifacts.'
 
 all: check build
 
 build:
-	$(GO) build -o $(BIN) $(CMD)
+	GOOS=$(GOOS) GOARCH=$(GOARCH) $(GO) build -ldflags "$(LDFLAGS)" -o $(BIN) $(CMD)
 
 run:
 	$(GO) run $(CMD) help
@@ -36,6 +54,40 @@ smoke:
 	$(GO) test ./cmd/macscope -run Smoke -count=1
 
 check: fmt test vet
+
+install: build
+	install -d "$(DESTDIR)$(BINDIR)"
+	install -m 0755 "$(BIN)" "$(DESTDIR)$(BINDIR)/$(BIN)"
+
+uninstall:
+	rm -f "$(DESTDIR)$(BINDIR)/$(BIN)"
+
+install-completions:
+	install -d "$(DESTDIR)$(BASH_COMPLETION_DIR)"
+	install -d "$(DESTDIR)$(ZSH_COMPLETION_DIR)"
+	install -d "$(DESTDIR)$(FISH_COMPLETION_DIR)"
+	$(GO) run $(CMD) completion bash > "$(DESTDIR)$(BASH_COMPLETION_DIR)/$(BIN)"
+	$(GO) run $(CMD) completion zsh > "$(DESTDIR)$(ZSH_COMPLETION_DIR)/_$(BIN)"
+	$(GO) run $(CMD) completion fish > "$(DESTDIR)$(FISH_COMPLETION_DIR)/$(BIN).fish"
+
+uninstall-completions:
+	rm -f "$(DESTDIR)$(BASH_COMPLETION_DIR)/$(BIN)"
+	rm -f "$(DESTDIR)$(ZSH_COMPLETION_DIR)/_$(BIN)"
+	rm -f "$(DESTDIR)$(FISH_COMPLETION_DIR)/$(BIN).fish"
+
+dist:
+	rm -rf "$(DIST_DIR)/$(DIST_NAME)"
+	mkdir -p "$(DIST_DIR)/$(DIST_NAME)/completions"
+	GOOS=$(GOOS) GOARCH=$(GOARCH) $(GO) build -ldflags "$(LDFLAGS)" -o "$(DIST_DIR)/$(DIST_NAME)/$(BIN)" $(CMD)
+	cp README.md "$(DIST_DIR)/$(DIST_NAME)/README.md"
+	cp -R docs "$(DIST_DIR)/$(DIST_NAME)/docs"
+	$(GO) run $(CMD) completion bash > "$(DIST_DIR)/$(DIST_NAME)/completions/$(BIN).bash"
+	$(GO) run $(CMD) completion zsh > "$(DIST_DIR)/$(DIST_NAME)/completions/_$(BIN)"
+	$(GO) run $(CMD) completion fish > "$(DIST_DIR)/$(DIST_NAME)/completions/$(BIN).fish"
+	tar -C "$(DIST_DIR)" -czf "$(DIST_DIR)/$(DIST_NAME).tar.gz" "$(DIST_NAME)"
+	shasum -a 256 "$(DIST_DIR)/$(DIST_NAME).tar.gz" > "$(DIST_DIR)/$(DIST_NAME).tar.gz.sha256"
+
+release: check dist
 
 clean:
 	rm -f $(BIN)

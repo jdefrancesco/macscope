@@ -13,6 +13,7 @@ Current status:
 - `macscope tcc`, `macscope es`, and `macscope vpn` are implemented in Go.
 - `macscope timeline` is implemented in Go.
 - Shell completions are available for bash, zsh, and fish.
+- Make targets cover install/uninstall and local release archives.
 
 ## Build And Run
 
@@ -44,6 +45,9 @@ make test
 make vet
 make smoke
 make check
+make install PREFIX="$HOME/.local"
+make install-completions PREFIX="$HOME/.local"
+make release
 ```
 
 The first live collectors will wrap native macOS tools with `exec.CommandContext`. Commands must capture stdout and stderr separately, use timeouts, and avoid shell interpolation with untrusted values.
@@ -80,6 +84,31 @@ macscope completion fish | source
 ```
 
 For a persistent install, write the generated script into the completion directory managed by your shell or package manager.
+
+## Install And Release
+
+`make install` builds the binary and installs it under `$(PREFIX)/bin`. The default `PREFIX` is `/usr/local`; override it for user-local installs:
+
+```sh
+make install PREFIX="$HOME/.local"
+make uninstall PREFIX="$HOME/.local"
+```
+
+Package staging can use `DESTDIR`, for example `make install PREFIX=/usr DESTDIR="$PWD/pkgroot"`.
+
+Shell completions are installed separately so the binary install stays predictable:
+
+```sh
+make install-completions PREFIX="$HOME/.local"
+make uninstall-completions PREFIX="$HOME/.local"
+```
+
+`make release` runs checks and writes a tarball plus SHA-256 checksum under `dist/`. Override `VERSION`, `GOOS`, or `GOARCH` for explicit release builds:
+
+```sh
+make release VERSION=v0.1.0
+make dist VERSION=v0.1.0 GOOS=darwin GOARCH=arm64
+```
 
 ## macho
 

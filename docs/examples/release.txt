@@ -1,0 +1,21 @@
+Expected shape:
+
+  make install PREFIX="$HOME/.local"
+  make install-completions PREFIX="$HOME/.local"
+  make release VERSION=v0.1.0
+
+Install:
+
+  make install PREFIX="$HOME/.local"
+  make install PREFIX=/usr DESTDIR="$PWD/pkgroot"
+  make uninstall PREFIX="$HOME/.local"
+
+Completions:
+
+  make install-completions PREFIX="$HOME/.local"
+  make uninstall-completions PREFIX="$HOME/.local"
+
+Release artifact:
+
+  make release VERSION=v0.1.0
+  make dist VERSION=v0.1.0 GOOS=darwin GOARCH=arm64

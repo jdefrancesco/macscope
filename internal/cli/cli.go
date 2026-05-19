@@ -8,7 +8,7 @@ import (
 	"github.com/jdefrancesco/macscope/internal/output"
 )
 
-const version = "dev"
+var version = "dev"
 
 type commandSpec struct {
 	Name    string
