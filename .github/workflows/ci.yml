@@ -1,0 +1,46 @@
+name: CI
+
+on:
+  push:
+    branches:
+      - master
+      - main
+  pull_request:
+
+permissions:
+  contents: read
+
+jobs:
+  test:
+    name: Test And Package
+    runs-on: macos-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Set up Go
+        uses: actions/setup-go@v5
+        with:
+          go-version-file: go.mod
+          cache: true
+
+      - name: Check
+        run: make check
+
+      - name: Smoke
+        run: make smoke
+
+      - name: Build Release Archive
+        run: make dist VERSION=ci-${{ github.sha }} GOOS=darwin GOARCH=arm64
+
+      - name: Verify Release Checksum
+        run: shasum -a 256 -c dist/macscope_ci-${{ github.sha }}_darwin_arm64.tar.gz.sha256
+
+      - name: Upload Release Archive
+        uses: actions/upload-artifact@v4
+        with:
+          name: macscope-darwin-arm64
+          path: |
+            dist/macscope_ci-${{ github.sha }}_darwin_arm64.tar.gz
+            dist/macscope_ci-${{ github.sha }}_darwin_arm64.tar.gz.sha256
+          if-no-files-found: error

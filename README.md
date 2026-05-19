@@ -110,6 +110,8 @@ make release VERSION=v0.1.0
 make dist VERSION=v0.1.0 GOOS=darwin GOARCH=arm64
 ```
 
+CI runs the same `make check`, `make smoke`, and `make dist` paths on macOS.
+
 ## macho
 
 `macscope macho [--json] [--full] [--triage] <path>` inspects a Mach-O binary or `.app` bundle. It resolves the bundle executable, hashes the binary, detects architectures, checks code signing and Gatekeeper policy, lists extended attributes, and records linked libraries.
