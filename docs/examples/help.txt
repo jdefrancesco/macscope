@@ -1,0 +1,36 @@
+Example:
+
+  macscope help
+
+Purpose:
+
+  Show stable command names and current implementation status.
+
+Expected shape:
+
+  macscope - modern macOS introspection and triage toolkit
+
+  Usage:
+    macscope <command> [flags]
+    macscope help
+    macscope version
+
+  Commands:
+    macscope macho <path>
+        Inspect binary/app identity, architecture, signing, Gatekeeper, xattrs, and linked libraries.
+    macscope proc <pid-or-name>
+        Triage a running process by PID or name.
+    macscope attach <pid>
+        Explain likely LLDB attach failures using signing, group, and log evidence.
+    macscope persist
+        Inspect launchd persistence locations and explain suspicious launch items.
+    macscope tcc --last 30m | --watch
+        Inspect recent or live TCC/privacy denial logs.
+    macscope es --last 30m | --watch
+        Inspect EndpointSecurity entitlement and access-denial logs.
+    macscope vpn [vpn-name]
+        Inspect VPN service state, utun interfaces, DNS, proxy, routes, and recent logs.
+    macscope panic --last | --file <panic-file> | --since 48h | --json
+        Parse panic logs and classify watchdog/kernel reboot evidence.
+    macscope timeline --pid <pid>
+        Correlate process, log, policy, and system events into one timeline.
