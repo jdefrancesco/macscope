@@ -90,6 +90,9 @@ func TestAnalyzeFile(t *testing.T) {
 	if !hasFinding(report.Findings, "QUARANTINE_PRESENT") {
 		t.Fatalf("Findings = %#v, want QUARANTINE_PRESENT", report.Findings)
 	}
+	if report.Triage.Score == 0 || report.Triage.Level == "" {
+		t.Fatalf("Triage = %#v, want non-zero score and level", report.Triage)
+	}
 	if len(report.RawCommands) == 0 {
 		t.Fatal("RawCommands = empty, want command snapshots when Full is true")
 	}
@@ -167,6 +170,35 @@ func TestClassifySkipsApplePlatformTrustQuirk(t *testing.T) {
 
 	if got := classify(report); len(got) != 0 {
 		t.Fatalf("classify() = %#v, want no findings for Apple platform trust-policy quirk", got)
+	}
+}
+
+func TestBuildTriageScoresFindings(t *testing.T) {
+	report := Report{
+		BinaryPath:      "/Users/alice/Downloads/tool",
+		Architectures:   []string{"arm64"},
+		LinkedLibraries: []string{"/tmp/libOdd.dylib"},
+		Findings: []Finding{
+			{
+				Category: "UNSIGNED_BINARY",
+				Evidence: []string{"codesign reported the target is not signed"},
+			},
+			{
+				Category: "GATEKEEPER_REJECTED",
+				Evidence: []string{"spctl assessment did not accept the target"},
+			},
+		},
+	}
+
+	triage := BuildTriage(report)
+	if triage.Score < 75 {
+		t.Fatalf("Score = %d, want high score", triage.Score)
+	}
+	if triage.Level != "CRITICAL" {
+		t.Fatalf("Level = %q, want CRITICAL", triage.Level)
+	}
+	if len(triage.Signals) < 4 {
+		t.Fatalf("Signals = %#v, want findings plus path signals", triage.Signals)
 	}
 }
 

@@ -71,7 +71,7 @@ func commands() []commandSpec {
 	return []commandSpec{
 		{
 			Name:      "macho",
-			Usage:     "macscope macho [--json] [--full] <path>",
+			Usage:     "macscope macho [--json] [--full] [--triage] <path>",
 			Summary:   "Inspect binary/app identity, architecture, signing, Gatekeeper, xattrs, and linked libraries.",
 			Milestone: "Milestone 2: macho",
 			Run:       runMacho,

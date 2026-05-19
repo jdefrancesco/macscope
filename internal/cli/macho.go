@@ -12,10 +12,11 @@ import (
 )
 
 type machoFlags struct {
-	json bool
-	full bool
-	help bool
-	path string
+	json   bool
+	full   bool
+	help   bool
+	triage bool
+	path   string
 }
 
 func runMacho(ctx context.Context, args []string, streams output.Streams) error {
@@ -38,6 +39,9 @@ func runMacho(ctx context.Context, args []string, streams output.Streams) error 
 	if flags.json {
 		return output.WriteJSON(streams.Out, report)
 	}
+	if flags.triage {
+		return renderMachoTriageReport(streams.Out, report)
+	}
 	return renderMachoReport(streams.Out, report)
 }
 
@@ -52,12 +56,14 @@ func parseMachoFlags(args []string) (machoFlags, error) {
 			flags.json = true
 		case "--full":
 			flags.full = true
+		case "--triage":
+			flags.triage = true
 		default:
 			if strings.HasPrefix(arg, "-") {
 				return machoFlags{}, fmt.Errorf("unknown macho flag: %s", arg)
 			}
 			if flags.path != "" {
-				return machoFlags{}, errors.New("usage: macscope macho [--json] [--full] <path>")
+				return machoFlags{}, errors.New("usage: macscope macho [--json] [--full] [--triage] <path>")
 			}
 			flags.path = arg
 		}
@@ -67,7 +73,7 @@ func parseMachoFlags(args []string) (machoFlags, error) {
 		return flags, nil
 	}
 	if flags.path == "" {
-		return machoFlags{}, errors.New("usage: macscope macho [--json] [--full] <path>")
+		return machoFlags{}, errors.New("usage: macscope macho [--json] [--full] [--triage] <path>")
 	}
 
 	return flags, nil
@@ -75,7 +81,7 @@ func parseMachoFlags(args []string) (machoFlags, error) {
 
 func printMachoHelp(w io.Writer) {
 	fmt.Fprintln(w, "Usage:")
-	fmt.Fprintln(w, "  macscope macho [--json] [--full] <path>")
+	fmt.Fprintln(w, "  macscope macho [--json] [--full] [--triage] <path>")
 	fmt.Fprintln(w)
 	fmt.Fprintln(w, "Inspect a Mach-O binary or .app bundle.")
 	fmt.Fprintln(w)
@@ -83,8 +89,9 @@ func printMachoHelp(w io.Writer) {
 	fmt.Fprintln(w, "  file, lipo, codesign, spctl, xattr, otool")
 	fmt.Fprintln(w)
 	fmt.Fprintln(w, "Flags:")
-	fmt.Fprintln(w, "  --json   Emit stable JSON.")
-	fmt.Fprintln(w, "  --full   Include raw command output in JSON.")
+	fmt.Fprintln(w, "  --json     Emit stable JSON.")
+	fmt.Fprintln(w, "  --full     Include raw command output in JSON.")
+	fmt.Fprintln(w, "  --triage   Show a compact file-specific breakdown with an overall triage score.")
 }
 
 func renderMachoReport(w io.Writer, report machoreport.Report) error {
@@ -185,6 +192,69 @@ func renderMachoReport(w io.Writer, report machoreport.Report) error {
 			if err := tw.Bullet("evidence: " + evidence); err != nil {
 				return err
 			}
+		}
+	}
+
+	return nil
+}
+
+func renderMachoTriageReport(w io.Writer, report machoreport.Report) error {
+	tw := output.NewTextWriter(w)
+	triage := report.Triage
+
+	if err := tw.Section("File Triage"); err != nil {
+		return err
+	}
+	if err := tw.KeyValue("Score", fmt.Sprintf("%d/100 %s", triage.Score, output.Level(triage.Level))); err != nil {
+		return err
+	}
+	if err := tw.KeyValue("Summary", triage.Summary); err != nil {
+		return err
+	}
+
+	if err := tw.Section("File Specifics"); err != nil {
+		return err
+	}
+	for _, kv := range [][2]string{
+		{"Input", report.InputPath},
+		{"Binary", report.BinaryPath},
+		{"Size", fmt.Sprintf("%d bytes", report.SizeBytes)},
+		{"SHA-256", report.SHA256},
+		{"Type", fallback(report.FileType, "unknown")},
+		{"Architectures", joinOr(report.Architectures, "unknown")},
+		{"Identifier", fallback(report.CodeSignature.Identifier, "unknown")},
+		{"Team ID", fallback(report.CodeSignature.TeamIdentifier, "unknown")},
+		{"codesign verify", verificationStatus(report)},
+		{"Gatekeeper", gatekeeperStatus(report)},
+		{"Linked Libraries", fmt.Sprintf("%d", len(report.LinkedLibraries))},
+		{"Extended Attributes", fmt.Sprintf("%d", len(report.ExtendedAttributes))},
+	} {
+		if err := tw.KeyValue(kv[0], kv[1]); err != nil {
+			return err
+		}
+	}
+
+	if err := tw.Section("Triage Signals"); err != nil {
+		return err
+	}
+	if len(triage.Signals) == 0 {
+		if err := tw.Bullet("no notable static triage signals"); err != nil {
+			return err
+		}
+	} else {
+		for _, signal := range triage.Signals {
+			if err := tw.Bullet(fmt.Sprintf("%s +%d - %s", signal.Category, signal.Points, signal.Evidence)); err != nil {
+				return err
+			}
+		}
+	}
+
+	if err := tw.Section("Recommended Actions"); err != nil {
+		return err
+	}
+	for _, action := range triage.RecommendedActions {
+		if err := tw.Bullet(action); err != nil {
+			return err
 		}
 	}
 

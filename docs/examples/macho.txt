@@ -1,6 +1,7 @@
 Example:
 
   macscope macho /bin/ls
+  macscope macho --triage /bin/ls
 
 Purpose:
 
@@ -30,6 +31,12 @@ Output sections:
   Findings
     Explainable categories such as UNSIGNED_BINARY, INVALID_SIGNATURE, GATEKEEPER_REJECTED, or QUARANTINE_PRESENT.
 
+Quick triage:
+
+  macscope macho --triage /bin/ls
+
+  Shows file specifics, an overall 0-100 triage score, evidence-backed signals, and recommended next actions.
+
 JSON:
 
   macscope macho --json /bin/ls
@@ -37,3 +44,7 @@ JSON:
 Full evidence:
 
   macscope macho --json --full /bin/ls
+
+Color:
+
+  Human output is lightly colorized. Set NO_COLOR=1 or MACSCOPE_NO_COLOR=1 to disable ANSI styling.

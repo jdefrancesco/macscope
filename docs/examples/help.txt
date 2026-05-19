@@ -16,7 +16,7 @@ Expected shape:
     macscope version
 
   Commands:
-    macscope macho [--json] [--full] <path>
+    macscope macho [--json] [--full] [--triage] <path>
         Inspect binary/app identity, architecture, signing, Gatekeeper, xattrs, and linked libraries.
     macscope proc [--json] <pid-or-name>
         Triage a running process by PID or name.

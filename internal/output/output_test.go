@@ -50,3 +50,11 @@ func TestTextWriter(t *testing.T) {
 		}
 	}
 }
+
+func TestNoColorEnv(t *testing.T) {
+	t.Setenv("NO_COLOR", "1")
+
+	if got := Level("HIGH"); got != "HIGH" {
+		t.Fatalf("Level with NO_COLOR = %q, want HIGH", got)
+	}
+}

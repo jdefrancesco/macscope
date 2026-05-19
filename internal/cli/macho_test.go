@@ -27,18 +27,18 @@ func TestRunMachoHelp(t *testing.T) {
 	if stderr.Len() != 0 {
 		t.Fatalf("stderr = %q, want empty", stderr.String())
 	}
-	if !strings.Contains(stdout.String(), "macscope macho [--json] [--full] <path>") {
+	if !strings.Contains(stdout.String(), "macscope macho [--json] [--full] [--triage] <path>") {
 		t.Fatalf("stdout = %q, want macho usage", stdout.String())
 	}
 }
 
 func TestParseMachoFlags(t *testing.T) {
-	flags, err := parseMachoFlags([]string{"--json", "--full", "/bin/ls"})
+	flags, err := parseMachoFlags([]string{"--json", "--full", "--triage", "/bin/ls"})
 	if err != nil {
 		t.Fatal(err)
 	}
-	if !flags.json || !flags.full || flags.path != "/bin/ls" {
-		t.Fatalf("flags = %#v, want json/full/path", flags)
+	if !flags.json || !flags.full || !flags.triage || flags.path != "/bin/ls" {
+		t.Fatalf("flags = %#v, want json/full/triage/path", flags)
 	}
 }
 
@@ -81,6 +81,46 @@ func TestRenderMachoReport(t *testing.T) {
 	} {
 		if !strings.Contains(got, want) {
 			t.Fatalf("render output missing %q:\n%s", want, got)
+		}
+	}
+}
+
+func TestRenderMachoTriageReport(t *testing.T) {
+	var buf bytes.Buffer
+	report := machoreport.Report{
+		InputPath:     "/tmp/tool",
+		BinaryPath:    "/tmp/tool",
+		SizeBytes:     123,
+		SHA256:        "abc123",
+		FileType:      "/tmp/tool: Mach-O 64-bit executable arm64",
+		Architectures: []string{"arm64"},
+		CodeSignature: codesign.Details{
+			Identifier: "com.example.tool",
+		},
+		CodeSignatureVerify: codesign.Verification{
+			Valid:   false,
+			Message: "/tmp/tool: code object is not signed at all",
+		},
+		Triage: machoreport.Triage{
+			Score:   40,
+			Level:   "MODERATE",
+			Summary: "moderate triage score 40 from 2 evidence-backed signal(s).",
+			Signals: []machoreport.TriageSignal{
+				{Category: "UNSIGNED_BINARY", Points: 30, Evidence: "codesign reported unsigned binary"},
+				{Category: "USER_WRITABLE_LOCATION", Points: 10, Evidence: "target path is under /tmp: /tmp/tool"},
+			},
+			RecommendedActions: []string{"review signing and Gatekeeper evidence before execution"},
+		},
+	}
+
+	if err := renderMachoTriageReport(&buf, report); err != nil {
+		t.Fatal(err)
+	}
+
+	got := buf.String()
+	for _, want := range []string{"File Triage:", "40/100", "File Specifics:", "UNSIGNED_BINARY +30"} {
+		if !strings.Contains(got, want) {
+			t.Fatalf("triage output missing %q:\n%s", want, got)
 		}
 	}
 }

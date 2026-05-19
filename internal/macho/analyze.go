@@ -41,6 +41,7 @@ type Report struct {
 	CodeSignatureVerify  codesign.Verification `json:"code_signature_verify"`
 	GatekeeperAssessment gatekeeper.Assessment `json:"gatekeeper_assessment"`
 	Findings             []Finding             `json:"findings,omitempty"`
+	Triage               Triage                `json:"triage"`
 	RawCommands          []CommandSnapshot     `json:"raw_commands,omitempty"`
 	CollectedAt          time.Time             `json:"collected_at"`
 }
@@ -56,6 +57,20 @@ type Finding struct {
 	Confidence float64  `json:"confidence"`
 	Evidence   []string `json:"evidence"`
 	Source     string   `json:"source"`
+}
+
+type Triage struct {
+	Score              int            `json:"score"`
+	Level              string         `json:"level"`
+	Summary            string         `json:"summary"`
+	Signals            []TriageSignal `json:"signals,omitempty"`
+	RecommendedActions []string       `json:"recommended_actions,omitempty"`
+}
+
+type TriageSignal struct {
+	Category string `json:"category"`
+	Points   int    `json:"points"`
+	Evidence string `json:"evidence"`
 }
 
 type CommandSnapshot struct {
@@ -136,6 +151,7 @@ func Analyze(ctx context.Context, inputPath string, opts Options) (Report, error
 	report.LinkedLibraries = ParseLinkedLibraries(otoolResult.Stdout + "\n" + otoolResult.Stderr)
 
 	report.Findings = classify(report)
+	report.Triage = BuildTriage(report)
 
 	return report, nil
 }
@@ -340,6 +356,127 @@ func classify(report Report) []Finding {
 	}
 
 	return findings
+}
+
+func BuildTriage(report Report) Triage {
+	var signals []TriageSignal
+	add := func(category string, points int, evidence string) {
+		signals = append(signals, TriageSignal{
+			Category: category,
+			Points:   points,
+			Evidence: evidence,
+		})
+	}
+
+	for _, finding := range report.Findings {
+		switch finding.Category {
+		case "UNSIGNED_BINARY":
+			add(finding.Category, 30, firstEvidence(finding.Evidence, "codesign reported unsigned binary"))
+		case "INVALID_SIGNATURE":
+			add(finding.Category, 25, firstEvidence(finding.Evidence, "codesign verification failed"))
+		case "GATEKEEPER_REJECTED":
+			add(finding.Category, 25, firstEvidence(finding.Evidence, "Gatekeeper assessment rejected target"))
+		case "QUARANTINE_PRESENT":
+			add(finding.Category, 8, firstEvidence(finding.Evidence, "quarantine xattr is present"))
+		default:
+			add(finding.Category, 10, firstEvidence(finding.Evidence, finding.Source))
+		}
+	}
+
+	if riskPath := pathLocationSignal(report.BinaryPath); riskPath != "" {
+		add("USER_WRITABLE_LOCATION", 10, riskPath)
+	}
+	for _, lib := range report.LinkedLibraries {
+		if riskPath := pathLocationSignal(lib); riskPath != "" {
+			add("USER_WRITABLE_LIBRARY_REFERENCE", 18, riskPath)
+		}
+	}
+	if report.CodeSignature.Identifier == "" && report.CodeSignature.Raw != "" {
+		add("MISSING_SIGNING_IDENTIFIER", 8, "codesign details did not include an identifier")
+	}
+	if len(report.Architectures) == 0 {
+		add("UNKNOWN_ARCHITECTURE", 4, "architecture could not be determined")
+	}
+
+	score := 0
+	for _, signal := range signals {
+		score += signal.Points
+	}
+	if score > 100 {
+		score = 100
+	}
+
+	level := triageLevel(score)
+	return Triage{
+		Score:              score,
+		Level:              level,
+		Summary:            triageSummary(level, score, len(signals)),
+		Signals:            signals,
+		RecommendedActions: triageActions(level, signals),
+	}
+}
+
+func firstEvidence(values []string, fallback string) string {
+	for _, value := range values {
+		if strings.TrimSpace(value) != "" {
+			return value
+		}
+	}
+	return fallback
+}
+
+func pathLocationSignal(path string) string {
+	clean := filepath.Clean(path)
+	switch {
+	case strings.HasPrefix(clean, "/tmp/"):
+		return "target path is under /tmp: " + clean
+	case strings.HasPrefix(clean, "/private/tmp/"):
+		return "target path is under /private/tmp: " + clean
+	case strings.HasPrefix(clean, "/var/folders/"):
+		return "target path is under /var/folders: " + clean
+	case strings.HasPrefix(clean, "/Users/"):
+		return "target path is under a user home directory: " + clean
+	default:
+		return ""
+	}
+}
+
+func triageLevel(score int) string {
+	switch {
+	case score >= 75:
+		return "CRITICAL"
+	case score >= 50:
+		return "HIGH"
+	case score >= 20:
+		return "MODERATE"
+	default:
+		return "LOW"
+	}
+}
+
+func triageSummary(level string, score int, signalCount int) string {
+	if signalCount == 0 {
+		return "No notable signing, Gatekeeper, location, or quarantine signals were found."
+	}
+	return fmt.Sprintf("%s triage score %d from %d evidence-backed signal(s).", strings.ToLower(level), score, signalCount)
+}
+
+func triageActions(level string, signals []TriageSignal) []string {
+	var actions []string
+	if level == "LOW" {
+		return []string{"No immediate action from static triage alone; preserve context if this file is part of an investigation."}
+	}
+	for _, signal := range signals {
+		switch signal.Category {
+		case "UNSIGNED_BINARY", "INVALID_SIGNATURE", "GATEKEEPER_REJECTED":
+			actions = append(actions, "review signing and Gatekeeper evidence before execution")
+		case "QUARANTINE_PRESENT":
+			actions = append(actions, "preserve quarantine metadata and source context")
+		case "USER_WRITABLE_LOCATION", "USER_WRITABLE_LIBRARY_REFERENCE":
+			actions = append(actions, "review writable-path provenance and related files")
+		}
+	}
+	return uniqueSorted(actions)
 }
 
 func isApplePlatformTrustQuirk(report Report, verifyRaw string) bool {

@@ -18,6 +18,7 @@ Current status:
 go run ./cmd/macscope help
 go run ./cmd/macscope version
 go run ./cmd/macscope macho /bin/ls
+go run ./cmd/macscope macho --triage /bin/ls
 go run ./cmd/macscope macho --json /bin/ls
 go run ./cmd/macscope panic --file testdata/panic/watchdog.panic
 go run ./cmd/macscope proc <pid-or-name>
@@ -42,7 +43,7 @@ The first live collectors will wrap native macOS tools with `exec.CommandContext
 ## Command Shape
 
 ```text
-macscope macho [--json] [--full] <path>
+macscope macho [--json] [--full] [--triage] <path>
 macscope proc [--json] <pid-or-name>
 macscope attach [--json] [--last 30m] <pid>
 macscope persist [--json] [--dir <launchd-dir>]
@@ -64,7 +65,7 @@ During the port, recognized-but-unimplemented Go commands point back to the zsh 
 
 ## macho
 
-`macscope macho [--json] [--full] <path>` inspects a Mach-O binary or `.app` bundle. It resolves the bundle executable, hashes the binary, detects architectures, checks code signing and Gatekeeper policy, lists extended attributes, and records linked libraries.
+`macscope macho [--json] [--full] [--triage] <path>` inspects a Mach-O binary or `.app` bundle. It resolves the bundle executable, hashes the binary, detects architectures, checks code signing and Gatekeeper policy, lists extended attributes, and records linked libraries.
 
 Native tools used:
 
@@ -75,7 +76,9 @@ Native tools used:
 - `xattr`
 - `otool`
 
-Normal output is concise and evidence-driven. `--json` emits machine-readable output. `--full` includes raw command output in the JSON report for audit and debugging.
+Normal output is concise, lightly colorized, and evidence-driven. `--triage` switches to a compact file-specific breakdown with a 0-100 triage score, level, signals, and recommended next actions. `--json` emits machine-readable output. `--full` includes raw command output in the JSON report for audit and debugging.
+
+Set `NO_COLOR=1` or `MACSCOPE_NO_COLOR=1` to disable ANSI styling in human output.
 
 ## panic
 
