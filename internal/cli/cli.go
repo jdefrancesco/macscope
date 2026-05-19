@@ -9,6 +9,8 @@ import (
 )
 
 var version = "dev"
+var buildCommit = "unknown"
+var buildDate = "unknown"
 
 type commandSpec struct {
 	Name    string
@@ -29,8 +31,11 @@ func Run(ctx context.Context, args []string, streams output.Streams) int {
 	case "help", "-h", "--help":
 		printHelp(streams.Out)
 		return 0
-	case "version", "--version":
-		fmt.Fprintf(streams.Out, "macscope %s\n", version)
+	case "--version":
+		if err := runVersion(ctx, args[1:], streams); err != nil {
+			fmt.Fprintf(streams.Err, "version: %v\n", err)
+			return 1
+		}
 		return 0
 	}
 
@@ -60,6 +65,12 @@ func commandByName(name string) (commandSpec, bool) {
 
 func commands() []commandSpec {
 	return []commandSpec{
+		{
+			Name:    "version",
+			Usage:   "macscope version [--json]",
+			Summary: "Show build version and platform metadata.",
+			Run:     runVersion,
+		},
 		{
 			Name:    "macho",
 			Usage:   "macscope macho [--json] [--full] [--triage] <path>",

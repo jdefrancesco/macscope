@@ -20,6 +20,7 @@ Current status:
 ```sh
 go run ./cmd/macscope help
 go run ./cmd/macscope version
+go run ./cmd/macscope version --json
 go run ./cmd/macscope macho /bin/ls
 go run ./cmd/macscope macho --triage /bin/ls
 go run ./cmd/macscope macho --json /bin/ls
@@ -69,6 +70,16 @@ macscope panic --file <panic-file> [--json]
 macscope panic --since 48h [--json]
 macscope timeline --pid <pid> [--last 30m] [--json|--jsonl]
 macscope completion <bash|zsh|fish>
+```
+
+## Version Metadata
+
+`macscope version [--json]` reports the CLI version, build commit, build date, Go version, and target platform. Release builds inject these fields through Makefile `LDFLAGS`:
+
+```sh
+make build VERSION=v0.1.0
+macscope version
+macscope version --json
 ```
 
 ## Shell Completions

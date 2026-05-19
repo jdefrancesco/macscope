@@ -16,6 +16,8 @@ Expected shape:
     macscope version
 
   Commands:
+    macscope version [--json]
+        Show build version and platform metadata.
     macscope macho [--json] [--full] [--triage] <path>
         Inspect binary/app identity, architecture, signing, Gatekeeper, xattrs, and linked libraries.
     macscope proc [--json] <pid-or-name>

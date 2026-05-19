@@ -72,7 +72,6 @@ func completionScript(shell string) (string, error) {
 func completionCommands() []completionCommand {
 	items := []completionCommand{
 		{Name: "help", Summary: "Show help."},
-		{Name: "version", Summary: "Show version."},
 	}
 	for _, cmd := range commands() {
 		items = append(items, completionCommand{
@@ -93,6 +92,8 @@ func completionFlags(command string) []completionFlag {
 	last := completionFlag{Long: "last", Description: "Set unified-log lookback window."}
 
 	switch command {
+	case "version":
+		return []completionFlag{help, json}
 	case "macho":
 		return []completionFlag{
 			help,

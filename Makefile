@@ -8,11 +8,13 @@ BASH_COMPLETION_DIR ?= $(DATADIR)/bash-completion/completions
 ZSH_COMPLETION_DIR ?= $(DATADIR)/zsh/site-functions
 FISH_COMPLETION_DIR ?= $(DATADIR)/fish/vendor_completions.d
 VERSION ?= $(shell git describe --tags --always --dirty 2>/dev/null || printf dev)
+BUILD_COMMIT ?= $(shell git rev-parse --short HEAD 2>/dev/null || printf unknown)
+BUILD_DATE ?= $(shell date -u +%Y-%m-%dT%H:%M:%SZ)
 GOOS ?= $(shell $(GO) env GOOS)
 GOARCH ?= $(shell $(GO) env GOARCH)
 DIST_DIR ?= dist
 DIST_NAME := $(BIN)_$(VERSION)_$(GOOS)_$(GOARCH)
-LDFLAGS ?= -s -w -X github.com/jdefrancesco/macscope/internal/cli.version=$(VERSION)
+LDFLAGS ?= -s -w -X github.com/jdefrancesco/macscope/internal/cli.version=$(VERSION) -X github.com/jdefrancesco/macscope/internal/cli.buildCommit=$(BUILD_COMMIT) -X github.com/jdefrancesco/macscope/internal/cli.buildDate=$(BUILD_DATE)
 
 .PHONY: help all build run fmt test vet smoke check install uninstall install-completions uninstall-completions dist release clean
 

@@ -19,6 +19,7 @@ func TestCommandSmokeHelpAndCompletions(t *testing.T) {
 		name string
 		args []string
 		want []string
+		json bool
 	}{
 		{
 			name: "help",
@@ -28,7 +29,13 @@ func TestCommandSmokeHelpAndCompletions(t *testing.T) {
 		{
 			name: "version",
 			args: []string{"version"},
-			want: []string{"macscope dev"},
+			want: []string{"macscope dev", "Commit:", "Platform:"},
+		},
+		{
+			name: "version json",
+			args: []string{"version", "--json"},
+			want: []string{`"name": "macscope"`, `"version": "dev"`, `"goos":`},
+			json: true,
 		},
 		{
 			name: "macho help",
@@ -105,6 +112,12 @@ func TestCommandSmokeHelpAndCompletions(t *testing.T) {
 			}
 			if stderr != "" {
 				t.Fatalf("stderr = %q, want empty", stderr)
+			}
+			if tt.json {
+				var decoded any
+				if err := json.Unmarshal([]byte(stdout), &decoded); err != nil {
+					t.Fatalf("invalid JSON: %v\n%s", err, stdout)
+				}
 			}
 			for _, want := range tt.want {
 				if !strings.Contains(stdout, want) {

@@ -1,0 +1,23 @@
+Expected shape:
+
+  macscope version [--json]
+
+Human output:
+
+  macscope v0.1.0
+    Commit:                  abc1234
+    Date:                    2026-05-19T12:00:00Z
+    Go:                      go1.24.0
+    Platform:                darwin/arm64
+
+JSON output:
+
+  {
+    "name": "macscope",
+    "version": "v0.1.0",
+    "commit": "abc1234",
+    "date": "2026-05-19T12:00:00Z",
+    "go_version": "go1.24.0",
+    "goos": "darwin",
+    "goarch": "arm64"
+  }
