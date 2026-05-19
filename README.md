@@ -11,7 +11,7 @@ Current status:
 - `macscope proc` and `macscope attach` are implemented in Go.
 - `macscope persist` is implemented in Go.
 - `macscope tcc`, `macscope es`, and `macscope vpn` are implemented in Go.
-- Remaining feature commands are recognized in Go, then implemented incrementally by milestone.
+- `macscope timeline` is implemented in Go.
 
 ## Build And Run
 
@@ -28,6 +28,7 @@ go run ./cmd/macscope persist
 go run ./cmd/macscope tcc --last 30m
 go run ./cmd/macscope es --last 30m
 go run ./cmd/macscope vpn
+go run ./cmd/macscope timeline --pid <pid>
 go test ./...
 go vet ./...
 ```
@@ -59,7 +60,7 @@ macscope vpn [--json] [--last 60m] [vpn-name]
 macscope panic --last [--json]
 macscope panic --file <panic-file> [--json]
 macscope panic --since 48h [--json]
-macscope timeline --pid <pid>
+macscope timeline --pid <pid> [--last 30m] [--json|--jsonl]
 ```
 
 During the port, recognized-but-unimplemented Go commands point back to the zsh fallback:
@@ -145,6 +146,12 @@ The command is read-only. It does not unload, delete, quarantine, or modify laun
 `macscope vpn [--json] [--last 60m] [vpn-name]` collects read-only VPN triage evidence from `scutil`, `ifconfig`, `route`, `netstat`, `log show`, and `pmset`.
 
 It reports configured VPN services, selected VPN status when a name is provided, utun interfaces, DNS/proxy/route evidence in JSON, recent VPN log lines, sleep/wake correlation, and conservative findings for disconnected requested services, absent utun interfaces, and VPN log errors or disconnects.
+
+## timeline
+
+`macscope timeline --pid <pid> [--last 30m] [--json|--jsonl]` correlates process identity, signing state, and attach/policy-related unified-log lines into normalized events.
+
+The default human output is a concise timeline. `--json` emits the full report, including findings and collection errors. `--jsonl` emits one normalized event per line for automation or storage.
 
 ## Safety Model
 

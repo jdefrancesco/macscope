@@ -1,0 +1,2 @@
+2026-05-19 15:11:00.000000-0400 localhost taskgated[99]: denied task_for_pid request for pid 123
+2026-05-19 15:11:01.000000-0400 localhost tccd[88]: deny kTCCServiceDeveloperTool client=com.example.Terminal

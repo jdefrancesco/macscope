@@ -1,0 +1,23 @@
+Example:
+
+  macscope timeline --pid 1234
+  macscope timeline --json --pid 1234 --last 30m
+  macscope timeline --jsonl --pid 1234 --last 30m
+
+Purpose:
+
+  Correlate process identity, signing state, and attach/policy unified-log events into one normalized timeline.
+
+Native tools:
+
+  ps, codesign, log
+
+Output:
+
+  Human output shows process identity, findings, and events.
+  JSON output includes the full report.
+  JSONL output emits one normalized event per line.
+
+Notes:
+
+  This command is read-only. It does not attach to the target process and does not bypass macOS policy.

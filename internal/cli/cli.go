@@ -127,9 +127,10 @@ func commands() []commandSpec {
 		},
 		{
 			Name:      "timeline",
-			Usage:     "macscope timeline --pid <pid>",
+			Usage:     "macscope timeline --pid <pid> [--last 30m] [--json|--jsonl]",
 			Summary:   "Correlate process, log, policy, and system events into one timeline.",
 			Milestone: "Milestone 7: timeline and correlation",
+			Run:       runTimeline,
 		},
 	}
 }
@@ -144,8 +145,7 @@ func printHelp(w io.Writer) {
 	}
 	fmt.Fprintln(w)
 	fmt.Fprintln(w, "Status:")
-	fmt.Fprintln(w, "  The Go CLI skeleton is active. macho, panic, proc, attach, persist, tcc, es, and vpn are implemented.")
-	fmt.Fprintln(w, "  Remaining feature commands are routed first, then filled in by milestone.")
+	fmt.Fprintln(w, "  The Go CLI skeleton is active. macho, panic, proc, attach, persist, tcc, es, vpn, and timeline are implemented.")
 	fmt.Fprintln(w, "  The existing ./macscope.zsh remains the proof-of-concept fallback during the port.")
 }
 
