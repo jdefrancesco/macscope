@@ -37,6 +37,7 @@ type Finding struct {
 	Source     string   `json:"source"`
 }
 
+// Analyze builds an attach triage report for a target process and recent logs.
 func Analyze(ctx context.Context, pid int, last string, runner collect.Runner) (Report, error) {
 	info, err := process.ForPID(ctx, pid, runner)
 	if err != nil {
@@ -70,6 +71,7 @@ func Analyze(ctx context.Context, pid int, last string, runner collect.Runner) (
 	return report, nil
 }
 
+// checkDeveloperGroup checks whether the given user is a member of _developer.
 func checkDeveloperGroup(ctx context.Context, username string, runner collect.Runner) GroupCheck {
 	result, err := runner.Run(ctx, "dseditgroup", "-o", "checkmember", "-m", username, "_developer")
 	raw := strings.TrimSpace(result.Stdout + "\n" + result.Stderr)
@@ -80,6 +82,7 @@ func checkDeveloperGroup(ctx context.Context, username string, runner collect.Ru
 	return check
 }
 
+// ParseGroupCheck normalizes dseditgroup output into a GroupCheck result.
 func ParseGroupCheck(group, raw string, exitOK bool) GroupCheck {
 	lower := strings.ToLower(raw)
 	member := exitOK && (strings.Contains(lower, "yes") || strings.Contains(lower, "is a member") || strings.Contains(lower, "true"))
@@ -94,6 +97,7 @@ func ParseGroupCheck(group, raw string, exitOK bool) GroupCheck {
 	}
 }
 
+// recentAttachLogs returns a filtered tail of attach-relevant unified log lines.
 func recentAttachLogs(ctx context.Context, last string, runner collect.Runner) []string {
 	if strings.TrimSpace(last) == "" {
 		last = "30m"
@@ -105,6 +109,7 @@ func recentAttachLogs(ctx context.Context, last string, runner collect.Runner) [
 	return tailNonEmptyLinesFromSlice(filterAttachLogLines(result.Stdout+"\n"+result.Stderr), 25)
 }
 
+// classify derives high-level findings from group checks, signing, and log evidence.
 func classify(report Report) []Finding {
 	var findings []Finding
 
@@ -145,6 +150,7 @@ func classify(report Report) []Finding {
 	return findings
 }
 
+// attachDenialEvidence extracts denial-like log lines related to debugger attach paths.
 func attachDenialEvidence(lines []string) []string {
 	var evidence []string
 	for _, line := range lines {
@@ -175,6 +181,7 @@ func attachDenialEvidence(lines []string) []string {
 	return evidence
 }
 
+// filterAttachLogLines keeps only non-empty lines relevant to attach triage.
 func filterAttachLogLines(input string) []string {
 	var lines []string
 	for _, line := range strings.Split(input, "\n") {
@@ -187,6 +194,7 @@ func filterAttachLogLines(input string) []string {
 	return lines
 }
 
+// isAttachRelevantLogLine reports whether a log line indicates attach activity or denials.
 func isAttachRelevantLogLine(line string) bool {
 	lower := strings.ToLower(line)
 	if strings.Contains(lower, "log run noninteractively") || strings.HasPrefix(lower, "timestamp ") {
@@ -211,6 +219,7 @@ func isAttachRelevantLogLine(line string) bool {
 	return hasActor && hasDecision
 }
 
+// tailNonEmptyLines returns up to the last limit non-empty lines from input text.
 func tailNonEmptyLines(input string, limit int) []string {
 	var lines []string
 	for _, line := range strings.Split(input, "\n") {
@@ -225,6 +234,7 @@ func tailNonEmptyLines(input string, limit int) []string {
 	return lines[len(lines)-limit:]
 }
 
+// tailNonEmptyLinesFromSlice returns up to the last limit entries from lines.
 func tailNonEmptyLinesFromSlice(lines []string, limit int) []string {
 	if len(lines) <= limit {
 		return lines
@@ -232,6 +242,7 @@ func tailNonEmptyLinesFromSlice(lines []string, limit int) []string {
 	return lines[len(lines)-limit:]
 }
 
+// firstNonEmptyLine returns the first non-blank line from a multi-line string.
 func firstNonEmptyLine(input string) string {
 	for _, line := range strings.Split(input, "\n") {
 		line = strings.TrimSpace(line)
@@ -242,6 +253,7 @@ func firstNonEmptyLine(input string) string {
 	return ""
 }
 
+// DefaultLogWindow returns the default attach log lookback duration string.
 func DefaultLogWindow() string {
 	return (30 * time.Minute).String()
 }

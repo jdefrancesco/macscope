@@ -2,6 +2,7 @@ package attach
 
 import "testing"
 
+// TestParseGroupCheck verifies membership parsing from dseditgroup output.
 func TestParseGroupCheck(t *testing.T) {
 	tests := []struct {
 		name   string
@@ -33,6 +34,7 @@ func TestParseGroupCheck(t *testing.T) {
 	}
 }
 
+// TestAttachDenialEvidence verifies attach denial lines are extracted from logs.
 func TestAttachDenialEvidence(t *testing.T) {
 	got := attachDenialEvidence([]string{
 		"normal log line",
@@ -47,6 +49,7 @@ func TestAttachDenialEvidence(t *testing.T) {
 	}
 }
 
+// TestFilterAttachLogLines verifies only attach-relevant lines are kept.
 func TestFilterAttachLogLines(t *testing.T) {
 	got := filterAttachLogLines(`Timestamp                       (process)[PID]
 hasAssocToWiFi6 = 1;
