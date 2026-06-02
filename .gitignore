@@ -1,2 +1,7 @@
 /macscope
 /dist/
+/coverage.out
+/coverage.html
+/*.coverprofile
+/*.prof
+/*.test

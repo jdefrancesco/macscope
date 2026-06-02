@@ -6,6 +6,7 @@ Expected shape:
   make homebrew-formula VERSION=v0.1.0 URL=<release-url> SHA256=<sha256>
   make release VERSION=v0.1.0
   make lint-workflows
+  make clean-artifacts
 
 Install:
 
@@ -48,3 +49,9 @@ The tag workflow publishes:
 Workflow lint:
 
   make lint-workflows
+
+Artifact cleanup:
+
+  make clean
+  make clean-artifacts
+  make cleanse-artifacts

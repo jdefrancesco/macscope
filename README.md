@@ -48,6 +48,7 @@ make vet
 make smoke
 make lint-workflows
 make check
+make clean-artifacts
 make install PREFIX="$HOME/.local"
 make install-completions PREFIX="$HOME/.local"
 make install-man PREFIX="$HOME/.local"
@@ -133,6 +134,15 @@ make dist VERSION=v0.1.0 GOOS=darwin GOARCH=arm64
 ```
 
 CI runs the same `make check`, `make smoke`, and `make dist` paths on macOS. `make lint-workflows` runs `actionlint` locally when it is installed.
+
+Artifact cleanup:
+
+```sh
+make clean
+make clean-artifacts
+```
+
+`clean-artifacts` removes the local binary, `dist/`, generated formula output, coverage reports, profiles, and local Go test binaries. `cleanse-artifacts` is an alias.
 
 ## Homebrew Formula
 

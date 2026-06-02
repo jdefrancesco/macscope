@@ -18,9 +18,10 @@ DIST_NAME := $(BIN)_$(VERSION)_$(GOOS)_$(GOARCH)
 HOMEBREW_VERSION ?= $(patsubst v%,%,$(VERSION))
 FORMULA ?= $(DIST_DIR)/homebrew/$(BIN).rb
 HOMEBREW_TEMPLATE ?= packaging/homebrew/$(BIN).rb
+ARTIFACT_FIND_EXPR ?= \( -name '*.test' -o -name '*.prof' -o -name '*.coverprofile' -o -name 'coverage.out' -o -name 'coverage.html' \)
 LDFLAGS ?= -s -w -X github.com/jdefrancesco/macscope/internal/cli.version=$(VERSION) -X github.com/jdefrancesco/macscope/internal/cli.buildCommit=$(BUILD_COMMIT) -X github.com/jdefrancesco/macscope/internal/cli.buildDate=$(BUILD_DATE)
 
-.PHONY: help all build run fmt test vet smoke lint-workflows check install uninstall install-completions uninstall-completions install-man uninstall-man homebrew-formula verify-homebrew-formula dist release clean
+.PHONY: help all build run fmt test vet smoke lint-workflows check install uninstall install-completions uninstall-completions install-man uninstall-man homebrew-formula verify-homebrew-formula dist release clean clean-artifacts cleanse-artifacts
 
 help:
 	@printf '%s\n' 'Targets:'
@@ -43,6 +44,7 @@ help:
 	@printf '  %-25s %s\n' 'dist' 'Build a local release archive under dist/.'
 	@printf '  %-25s %s\n' 'release' 'Run checks and build release artifacts.'
 	@printf '  %-25s %s\n' 'clean' 'Remove local build artifacts.'
+	@printf '  %-25s %s\n' 'clean-artifacts' 'Remove release, coverage, profile, and test artifacts.'
 
 all: check build
 
@@ -124,3 +126,9 @@ release: check dist
 
 clean:
 	rm -f $(BIN)
+
+clean-artifacts: clean
+	rm -rf "$(DIST_DIR)"
+	find . -path ./.git -prune -o -type f $(ARTIFACT_FIND_EXPR) -exec rm -f {} +
+
+cleanse-artifacts: clean-artifacts
