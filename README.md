@@ -12,6 +12,7 @@ Current status:
 - `macscope persist` is implemented in Go.
 - `macscope tcc`, `macscope es`, and `macscope vpn` are implemented in Go.
 - `macscope timeline` is implemented in Go.
+- `macscope sysext` is implemented in Go.
 - Shell completions are available for bash, zsh, and fish.
 - Make targets cover install/uninstall and local release archives.
 - Homebrew formula rendering is available under `packaging/homebrew/`.
@@ -74,6 +75,7 @@ macscope panic --last [--json]
 macscope panic --file <panic-file> [--json]
 macscope panic --since 48h [--json]
 macscope timeline --pid <pid> [--last 30m] [--json|--jsonl]
+macscope sysext [--json]
 macscope completion <bash|zsh|fish>
 ```
 
@@ -268,6 +270,19 @@ It reports configured VPN services, selected VPN status when a name is provided,
 `macscope timeline --pid <pid> [--last 30m] [--json|--jsonl]` correlates process identity, signing state, and attach/policy-related unified-log lines into normalized events.
 
 The default human output is a concise timeline. `--json` emits the full report, including findings and collection errors. `--jsonl` emits one normalized event per line for automation or storage.
+
+## sysext
+
+`macscope sysext [--json]` inventories installed system extensions with `systemextensionsctl list` and classifies notable states with evidence.
+
+It groups extensions by type (network, endpoint security, driver), reports each extension's bundle identifier, version, team ID, and enabled/active state, and flags conditions such as:
+
+- `MULTIPLE_NETWORK_EXTENSIONS` when more than one network extension is enabled, which can fragment traffic handling.
+- `EXTENSION_AWAITING_APPROVAL` when an extension is enabled but still waiting for user approval in System Settings.
+- `EXTENSION_TERMINATED` when an enabled extension has been terminated.
+- `EXTENSION_NOT_ACTIVATED` for other enabled-but-inactive states.
+
+The command is read-only. It does not enable, disable, or remove extensions.
 
 ## Safety Model
 

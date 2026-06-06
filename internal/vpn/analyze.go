@@ -7,6 +7,7 @@ import (
 
 	"github.com/jdefrancesco/macscope/internal/collect"
 	"github.com/jdefrancesco/macscope/internal/logquery"
+	"github.com/jdefrancesco/macscope/internal/pmset"
 )
 
 type Report struct {
@@ -120,7 +121,11 @@ func Analyze(ctx context.Context, vpnName string, last string, runner collect.Ru
 	if result, err := runner.Run(ctx, "pmset", "-g", "log"); err != nil && result.Stdout == "" && result.Stderr == "" {
 		report.CollectionErrors = append(report.CollectionErrors, err.Error())
 	} else {
-		report.SleepWakeLines = Tail(FilterSleepWakeLines(result.Stdout+"\n"+result.Stderr), 60)
+		events := pmset.Tail(pmset.SleepWakeEvents(pmset.ParseLog(result.Stdout+"\n"+result.Stderr)), 60)
+		report.SleepWakeLines = make([]string, 0, len(events))
+		for _, event := range events {
+			report.SleepWakeLines = append(report.SleepWakeLines, event.String())
+		}
 	}
 
 	report.Findings = Classify(report)
@@ -192,21 +197,6 @@ func FilterVPNLogLines(input string) []string {
 			strings.Contains(lower, "ipsec") ||
 			strings.Contains(lower, "ike") ||
 			strings.Contains(lower, "disconnect") {
-			lines = append(lines, line)
-		}
-	}
-	return lines
-}
-
-func FilterSleepWakeLines(input string) []string {
-	var lines []string
-	for _, line := range nonEmptyLines(input) {
-		lower := strings.ToLower(line)
-		if strings.Contains(lower, "sleep") ||
-			strings.Contains(lower, "wake") ||
-			strings.Contains(lower, "darkwake") ||
-			strings.Contains(lower, "tcpkeepalive") ||
-			strings.Contains(lower, "network") {
 			lines = append(lines, line)
 		}
 	}

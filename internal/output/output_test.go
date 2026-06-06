@@ -38,12 +38,20 @@ func TestTextWriter(t *testing.T) {
 	if err := writer.Bullet("panic string contains watchdog timeout"); err != nil {
 		t.Fatal(err)
 	}
+	if err := writer.Detail("source: panic-full-1234.panic"); err != nil {
+		t.Fatal(err)
+	}
+	if err := writer.Section("Metadata"); err != nil {
+		t.Fatal(err)
+	}
 
 	got := buf.String()
 	for _, want := range []string{
 		"Panic Type:",
 		"Summary:",
 		"- panic string contains watchdog timeout",
+		"- source: panic-full-1234.panic",
+		"\n\nMetadata:",
 	} {
 		if !strings.Contains(got, want) {
 			t.Fatalf("TextWriter output missing %q:\n%s", want, got)

@@ -38,7 +38,7 @@ func TestCompletionScripts(t *testing.T) {
 			shell: "bash",
 			want: []string{
 				"complete -F _macscope macscope",
-				"macho proc attach persist tcc es vpn panic timeline completion",
+				"macho proc attach persist tcc es vpn panic timeline sysext completion",
 				"--json --full --triage",
 			},
 		},

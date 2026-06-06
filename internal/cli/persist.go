@@ -109,22 +109,19 @@ func renderPersistReport(w io.Writer, report launchd.Report) error {
 	} else {
 		for _, finding := range report.Findings {
 			label := fallback(finding.JobLabel, filepath.Base(finding.JobPath))
-			line := fmt.Sprintf("%s label=%s score=%d severity=%s confidence=%.2f", finding.Category, label, finding.Score, finding.Severity, finding.Confidence)
-			if err := tw.Bullet(line); err != nil {
-				return err
+			details := []string{
+				fmt.Sprintf("label: %s", label),
+				fmt.Sprintf("score: %d", finding.Score),
 			}
 			if finding.Program != "" {
-				if err := tw.Bullet("program: " + finding.Program); err != nil {
-					return err
-				}
+				details = append(details, "program: "+finding.Program)
 			}
-			if err := tw.Bullet("plist: " + finding.JobPath); err != nil {
-				return err
-			}
+			details = append(details, "plist: "+finding.JobPath)
 			for _, evidence := range finding.Evidence {
-				if err := tw.Bullet("evidence: " + evidence); err != nil {
-					return err
-				}
+				details = append(details, "evidence: "+evidence)
+			}
+			if err := renderFinding(tw, finding.Category, finding.Severity, finding.Confidence, "", details); err != nil {
+				return err
 			}
 		}
 	}

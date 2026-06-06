@@ -144,13 +144,8 @@ func renderTCCReport(w io.Writer, report tcc.Report) error {
 		}
 	} else {
 		for _, finding := range report.Findings {
-			if err := tw.Bullet(fmt.Sprintf("%s severity=%s confidence=%.2f", finding.Category, finding.Severity, finding.Confidence)); err != nil {
+			if err := renderFindingWithEvidence(tw, finding.Category, finding.Severity, finding.Confidence, "", finding.Evidence); err != nil {
 				return err
-			}
-			for _, evidence := range finding.Evidence {
-				if err := tw.Bullet("evidence: " + evidence); err != nil {
-					return err
-				}
 			}
 		}
 	}
@@ -197,13 +192,8 @@ func renderESReport(w io.Writer, report endpointsecurity.Report) error {
 		}
 	} else {
 		for _, finding := range report.Findings {
-			if err := tw.Bullet(fmt.Sprintf("%s severity=%s confidence=%.2f", finding.Category, finding.Severity, finding.Confidence)); err != nil {
+			if err := renderFindingWithEvidence(tw, finding.Category, finding.Severity, finding.Confidence, "", finding.Evidence); err != nil {
 				return err
-			}
-			for _, evidence := range finding.Evidence {
-				if err := tw.Bullet("evidence: " + evidence); err != nil {
-					return err
-				}
 			}
 		}
 	}

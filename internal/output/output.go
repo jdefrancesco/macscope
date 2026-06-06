@@ -30,36 +30,49 @@ func (s Streams) WithDefaults() Streams {
 }
 
 type TextWriter struct {
-	w io.Writer
+	w            io.Writer
+	wroteSection bool
 }
 
 var (
 	sectionStyle = lipgloss.NewStyle().Bold(true).Foreground(lipgloss.Color("63"))
 	keyStyle     = lipgloss.NewStyle().Foreground(lipgloss.Color("39"))
 	bulletStyle  = lipgloss.NewStyle().Foreground(lipgloss.Color("240"))
+	detailStyle  = lipgloss.NewStyle().Foreground(lipgloss.Color("245"))
 	okStyle      = lipgloss.NewStyle().Bold(true).Foreground(lipgloss.Color("42"))
 	warnStyle    = lipgloss.NewStyle().Bold(true).Foreground(lipgloss.Color("214"))
 	dangerStyle  = lipgloss.NewStyle().Bold(true).Foreground(lipgloss.Color("203"))
 	mutedStyle   = lipgloss.NewStyle().Foreground(lipgloss.Color("245"))
 )
 
-func NewTextWriter(w io.Writer) TextWriter {
-	return TextWriter{w: w}
+func NewTextWriter(w io.Writer) *TextWriter {
+	return &TextWriter{w: w}
 }
 
-func (tw TextWriter) Section(title string) error {
+func (tw *TextWriter) Section(title string) error {
+	if tw.wroteSection {
+		if _, err := fmt.Fprintln(tw.w); err != nil {
+			return err
+		}
+	}
+	tw.wroteSection = true
 	_, err := fmt.Fprintf(tw.w, "%s\n", colorize(sectionStyle, title+":"))
 	return err
 }
 
-func (tw TextWriter) KeyValue(key, value string) error {
+func (tw *TextWriter) KeyValue(key, value string) error {
 	label := fmt.Sprintf("%-24s", key+":")
 	_, err := fmt.Fprintf(tw.w, "  %s %s\n", colorize(keyStyle, label), value)
 	return err
 }
 
-func (tw TextWriter) Bullet(value string) error {
+func (tw *TextWriter) Bullet(value string) error {
 	_, err := fmt.Fprintf(tw.w, "  %s %s\n", colorize(bulletStyle, "-"), value)
+	return err
+}
+
+func (tw *TextWriter) Detail(value string) error {
+	_, err := fmt.Fprintf(tw.w, "    %s %s\n", colorize(detailStyle, "-"), value)
 	return err
 }
 

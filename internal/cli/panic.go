@@ -240,7 +240,7 @@ func renderPanicReport(w io.Writer, report paniclog.Report) error {
 				return err
 			}
 			for _, evidence := range cause.Evidence {
-				if err := tw.Bullet("evidence: " + evidence); err != nil {
+				if err := tw.Detail("evidence: " + evidence); err != nil {
 					return err
 				}
 			}

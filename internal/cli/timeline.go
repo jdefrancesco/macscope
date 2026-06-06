@@ -148,13 +148,8 @@ func renderTimelineReport(w io.Writer, report timeline.Report) error {
 		}
 	} else {
 		for _, finding := range report.Findings {
-			if err := tw.Bullet(fmt.Sprintf("%s severity=%s confidence=%.2f source=%s", finding.Category, finding.Severity, finding.Confidence, finding.Source)); err != nil {
+			if err := renderFindingWithEvidence(tw, finding.Category, finding.Severity, finding.Confidence, finding.Source, finding.Evidence); err != nil {
 				return err
-			}
-			for _, evidence := range finding.Evidence {
-				if err := tw.Bullet("evidence: " + evidence); err != nil {
-					return err
-				}
 			}
 		}
 	}

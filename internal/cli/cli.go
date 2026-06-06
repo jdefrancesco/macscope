@@ -126,6 +126,12 @@ func commands() []commandSpec {
 			Run:     runTimeline,
 		},
 		{
+			Name:    "sysext",
+			Usage:   "macscope sysext [--json]",
+			Summary: "Inventory system extensions and classify notable states.",
+			Run:     runSysext,
+		},
+		{
 			Name:    "completion",
 			Usage:   "macscope completion <bash|zsh|fish>",
 			Summary: "Generate shell completion scripts.",
@@ -139,9 +145,11 @@ func printHelp(w io.Writer) {
 	fmt.Fprintln(w)
 	fmt.Fprintln(w, "Commands:")
 	for _, cmd := range commands() {
-		fmt.Fprintf(w, "  %s\n", cmd.Usage)
-		fmt.Fprintf(w, "      %s\n", cmd.Summary)
+		fmt.Fprintf(w, "  %-10s %s\n", cmd.Name, cmd.Summary)
+		fmt.Fprintf(w, "             usage: %s\n", cmd.Usage)
 	}
+	fmt.Fprintln(w)
+	fmt.Fprintln(w, "Run `macscope <command> --help` for command-specific examples and flags.")
 	fmt.Fprintln(w)
 }
 

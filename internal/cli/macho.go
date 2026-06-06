@@ -184,14 +184,8 @@ func renderMachoReport(w io.Writer, report machoreport.Report) error {
 		return tw.Bullet("no notable signing, Gatekeeper, or quarantine findings")
 	}
 	for _, finding := range report.Findings {
-		line := fmt.Sprintf("%s severity=%s confidence=%.2f source=%s", finding.Category, finding.Severity, finding.Confidence, finding.Source)
-		if err := tw.Bullet(line); err != nil {
+		if err := renderFindingWithEvidence(tw, finding.Category, finding.Severity, finding.Confidence, finding.Source, finding.Evidence); err != nil {
 			return err
-		}
-		for _, evidence := range finding.Evidence {
-			if err := tw.Bullet("evidence: " + evidence); err != nil {
-				return err
-			}
 		}
 	}
 

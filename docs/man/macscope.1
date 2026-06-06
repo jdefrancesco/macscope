@@ -66,6 +66,9 @@
 .Op Fl -last Ar duration
 .Op Fl -json | Fl -jsonl
 .Nm
+.Cm sysext
+.Op Fl -json
+.Nm
 .Cm completion
 .Ar bash | zsh | fish
 .Sh DESCRIPTION
@@ -123,6 +126,11 @@ or
 .It Cm timeline Fl -pid Ar pid Op Fl -last Ar duration Op Fl -json | Fl -jsonl
 Correlate process identity, signing state, and attach/policy-related log
 events into normalized timeline events.
+.It Cm sysext Op Fl -json
+Inventory installed system extensions using
+.Xr systemextensionsctl 8
+and classify notable states such as multiple active network extensions,
+extensions awaiting user approval, and terminated extensions.
 .It Cm completion Ar bash | zsh | fish
 Generate shell completion scripts.
 .El
@@ -174,6 +182,7 @@ macscope persist --json
 macscope tcc --last 30m
 macscope vpn
 macscope timeline --pid 123 --jsonl
+macscope sysext
 source <(macscope completion zsh)
 .Ed
 .Sh NATIVE TOOLS
@@ -187,5 +196,6 @@ wraps supported macOS tools such as
 .Nm otool ,
 .Nm ps ,
 .Nm scutil ,
+.Nm spctl ,
 and
-.Nm spctl .
+.Nm systemextensionsctl .

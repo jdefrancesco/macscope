@@ -136,6 +136,8 @@ func completionFlags(command string) []completionFlag {
 			last,
 			{Long: "pid", Description: "Target process ID."},
 		}
+	case "sysext":
+		return []completionFlag{help, json}
 	case "completion":
 		return []completionFlag{help}
 	default:

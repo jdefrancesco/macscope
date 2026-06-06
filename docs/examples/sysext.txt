@@ -1,0 +1,16 @@
+Example:
+
+  macscope sysext
+  macscope sysext --json
+
+Purpose:
+
+  Inventory installed system extensions (network, endpoint security, and driver) and classify notable states with evidence.
+
+Native tools:
+
+  systemextensionsctl
+
+Notes:
+
+  This command is read-only. It reports extension state, user-approval status, and conflicts such as multiple active network extensions; it does not enable, disable, or remove extensions.
