@@ -1,0 +1,12 @@
+# REMEMBER TO ADD:
+
+- P124  of Op Handbook has some possible features we should add.
+- Let users easily install ObjSee Utils
+- P 114: Evidence collect easy:
+* registers, cache, routing table, arp, kernel stats, tempfss, remote logging
+
+- Quick commands: code signing, ls -al@, xattr, mdls
+- Easy check for valid cert
+- Look at strings in binary
+- log shortcuts for common querys
+- check all artifact locations (p 116 of Op Handbook)
