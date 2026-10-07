@@ -1,4 +1,4 @@
-.Dd May 19, 2026
+.Dd October 7, 2026
 .Dt MACSCOPE 1
 .Os
 .Sh NAME
@@ -10,6 +10,15 @@
 .Nm
 .Cm version
 .Op Fl -json
+.Nm
+.Cm specs
+.Op Fl -json
+.Nm
+.Cm disk
+.Op Fl -json
+.Op Fl -all
+.Op Fl -full
+.Op Ar path
 .Nm
 .Cm macho
 .Op Fl -json
@@ -86,6 +95,29 @@ security state.
 .Bl -tag -width Ds
 .It Cm version Op Fl -json
 Show build version, commit, build date, Go version, and target platform.
+.It Cm specs Op Fl -json
+List Mac model, processor, physical and logical CPU cores, memory, architecture,
+graphics processors, and macOS version/build using system_profiler, sysctl,
+and sw_vers.
+Serial numbers, UUIDs, display identifiers, and hostnames are omitted.
+GPU fields depend on available hardware data.
+Native and execution architectures are distinguished when they differ.
+Requires macOS; no sudo or additional permissions are needed.
+.It Cm disk Op Fl -json Op Fl -all Op Fl -full Op Ar path
+List size, used space, free space, and capacity percentage for mounted local
+disks using df.
+A supplied path selects its containing volume.
+.Fl -all
+includes auxiliary system and virtual local mounts.
+.Fl -full
+preserves usernames in human-readable paths; JSON always includes raw paths.
+Human sizes use binary units, while JSON uses byte counts at 1024-byte
+precision.
+APFS volumes can share capacity and free space; do not sum rows.
+The capacity percentage comes from df and is not used space divided by
+total size.
+Requires macOS; no sudo is needed.
+A supplied path must be accessible.
 .It Cm macho Op Fl -json Op Fl -full Op Fl -triage Ar path
 Inspect a Mach-O binary or app bundle.
 The command reports file identity, architectures, signing, Gatekeeper
@@ -174,6 +206,9 @@ Default per-user launchd persistence search path.
 returns 2 for command-line usage errors and unknown commands.
 .Sh EXAMPLES
 .Bd -literal -offset indent
+macscope specs
+macscope disk
+macscope disk --json /Volumes/Backup
 macscope macho --triage /bin/ls
 macscope panic --file testdata/panic/watchdog.panic
 macscope proc WindowServer
@@ -189,6 +224,7 @@ source <(macscope completion zsh)
 .Nm
 wraps supported macOS tools such as
 .Nm codesign ,
+.Nm df ,
 .Nm file ,
 .Nm ifconfig ,
 .Nm lipo ,
@@ -197,5 +233,8 @@ wraps supported macOS tools such as
 .Nm ps ,
 .Nm scutil ,
 .Nm spctl ,
+.Nm sw_vers ,
+.Nm sysctl ,
+.Nm system_profiler ,
 and
 .Nm systemextensionsctl .

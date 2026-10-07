@@ -6,6 +6,7 @@ Current status:
 
 - `macscope.zsh` is retained as the historical proof-of-concept reference.
 - `cmd/macscope` contains the Go CLI implementation and stable command routing.
+- `macscope specs` and `macscope disk` list hardware specifications and disk space.
 - `macscope macho` is implemented in Go.
 - `macscope panic` is implemented in Go.
 - `macscope proc` and `macscope attach` are implemented in Go.
@@ -23,6 +24,9 @@ Current status:
 go run ./cmd/macscope help
 go run ./cmd/macscope version
 go run ./cmd/macscope version --json
+go run ./cmd/macscope specs
+go run ./cmd/macscope disk
+go run ./cmd/macscope disk --json .
 go run ./cmd/macscope macho /bin/ls
 go run ./cmd/macscope macho --triage /bin/ls
 go run ./cmd/macscope macho --json /bin/ls
@@ -62,6 +66,8 @@ The first live collectors will wrap native macOS tools with `exec.CommandContext
 ## Command Shape
 
 ```text
+macscope specs [--json]
+macscope disk [--json] [--all] [--full] [path]
 macscope macho [--json] [--full] [--triage] <path>
 macscope proc [--json] <pid-or-name>
 macscope attach [--json] [--last 30m] <pid>
@@ -186,6 +192,29 @@ Local workflow linting:
 ```sh
 make lint-workflows
 ```
+
+## specs
+
+`macscope specs [--json]` lists the Mac model and identifier, processor, physical and logical CPU cores, memory, architecture, graphics processors, and macOS version/build. It uses `system_profiler -json -detailLevel mini SPHardwareDataType SPDisplaysDataType`, `sysctl`, and `sw_vers`.
+
+Human output uses binary memory units such as GiB; JSON reports exact memory bytes. GPU core counts and VRAM are shown when available. Serial numbers, hardware UUIDs, display identifiers, and hostnames are omitted from both output formats. Graphics details depend on the hardware and what `system_profiler` exposes. Apple Silicon chip metadata identifies native `arm64` hardware; when `sysctl hw.machine` differs (for example, under Rosetta), the execution architecture is reported separately.
+
+The command is read-only, requires macOS, and needs no sudo or additional permissions.
+
+## disk
+
+`macscope disk [--json] [--all] [--full] [path]` displays an aligned table of mount points, filesystems, size, used space, free space, and capacity percentage. With no path, it lists mounted local disks, hiding auxiliary mounts under `/System/Volumes/` except `Data`, and non-device virtual mounts. `--all` includes those mounts. Supply a file or directory to inspect its containing volume, including a network volume when explicitly requested:
+
+```sh
+macscope disk
+macscope disk --all
+macscope disk /Volumes/Backup
+macscope disk --json .
+```
+
+The native collector uses `df -k -P -I`, adding `-l` only when no path is supplied. Human sizes use binary units (KiB, MiB, GiB); JSON reports exact byte counts converted from `df`'s 1024-byte blocks. `Use%` preserves the capacity percentage reported by `df`. APFS volumes can share capacity and free space, and `Used + Free` can differ from `Size`; do not sum rows or interpret `Use%` as `Used / Size`. This is a mounted-volume view, not a physical disk inventory or a directory-size scan.
+
+Default human output redacts usernames in `/Users/` paths. `--full` preserves those paths; JSON always includes unredacted paths. The command is read-only, requires macOS, and needs no sudo. A supplied path must exist and be accessible. Native tool failures or timeouts return an error rather than fabricated sizes.
 
 ## macho
 

@@ -18,6 +18,10 @@ Expected shape:
   Commands:
     macscope version [--json]
         Show build version and platform metadata.
+    macscope specs [--json]
+        List Mac hardware specifications and macOS version.
+    macscope disk [--json] [--all] [--full] [path]
+        List disk capacity, used space, and free space by volume.
     macscope macho [--json] [--full] [--triage] <path>
         Inspect binary/app identity, architecture, signing, Gatekeeper, xattrs, and linked libraries.
     macscope proc [--json] <pid-or-name>

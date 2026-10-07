@@ -45,3 +45,17 @@ func renderFindingWithEvidence(tw *output.TextWriter, category, severity string,
 	}
 	return renderFinding(tw, category, severity, confidence, source, details)
 }
+
+func formatBytes(bytes int64) string {
+	value := float64(bytes)
+	units := [...]string{"B", "KiB", "MiB", "GiB", "TiB", "PiB", "EiB"}
+	unit := 0
+	for (value >= 1024 || value <= -1024) && unit < len(units)-1 {
+		value /= 1024
+		unit++
+	}
+	if unit == 0 {
+		return fmt.Sprintf("%d B", bytes)
+	}
+	return fmt.Sprintf("%.1f %s", value, units[unit])
+}

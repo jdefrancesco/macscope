@@ -39,6 +39,8 @@ func TestCompletionScripts(t *testing.T) {
 			want: []string{
 				"complete -F _macscope macscope",
 				"macho proc attach persist tcc es vpn panic timeline sysext completion",
+				"specs disk",
+				"--json --all --full",
 				"--json --full --triage",
 			},
 		},
@@ -48,6 +50,8 @@ func TestCompletionScripts(t *testing.T) {
 				"#compdef macscope",
 				"'macscope commands'",
 				"'macho:Inspect binary/app identity",
+				"'specs:List Mac hardware specifications",
+				"'disk:List disk capacity",
 				"'1:shell:(bash zsh fish)'",
 			},
 		},
@@ -56,6 +60,8 @@ func TestCompletionScripts(t *testing.T) {
 			want: []string{
 				"complete -c macscope -f",
 				"complete -c macscope -n '__fish_use_subcommand' -a 'macho'",
+				"complete -c macscope -n '__fish_use_subcommand' -a 'specs'",
+				"complete -c macscope -n '__fish_seen_subcommand_from disk' -l all",
 				"complete -c macscope -n '__fish_seen_subcommand_from completion' -a 'fish'",
 			},
 		},

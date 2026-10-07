@@ -27,6 +27,8 @@ func TestRunHelp(t *testing.T) {
 	for _, want := range []string{
 		"macscope <command> [flags]",
 		"macscope version [--json]",
+		"macscope specs [--json]",
+		"macscope disk [--json] [--all] [--full] [path]",
 		"macscope macho [--json] [--full] [--triage] <path>",
 		"macscope panic --last | --file <panic-file> | --since 48h [--json]",
 		"macscope persist [--json] [--dir <launchd-dir>]",

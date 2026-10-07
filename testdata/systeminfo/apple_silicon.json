@@ -1,0 +1,15 @@
+{
+  "SPHardwareDataType": [{
+    "machine_name": "MacBook Pro",
+    "machine_model": "Mac16,8",
+    "chip_type": "Apple M4 Pro",
+    "physical_memory": "48 GB",
+    "serial_number": "PRIVATE-SERIAL",
+    "platform_UUID": "PRIVATE-UUID"
+  }],
+  "SPDisplaysDataType": [{
+    "sppci_model": "Apple M4 Pro",
+    "sppci_cores": "20",
+    "spdisplays_ndrvs": [{"_name": "Display", "_spdisplays_display-serial-number": "PRIVATE-DISPLAY"}]
+  }]
+}

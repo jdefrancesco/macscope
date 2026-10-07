@@ -92,8 +92,15 @@ func completionFlags(command string) []completionFlag {
 	last := completionFlag{Long: "last", Description: "Set unified-log lookback window."}
 
 	switch command {
-	case "version":
+	case "version", "specs":
 		return []completionFlag{help, json}
+	case "disk":
+		return []completionFlag{
+			help,
+			json,
+			{Long: "all", Description: "Include auxiliary and virtual local mounts."},
+			{Long: "full", Description: "Preserve usernames in paths in human output."},
+		}
 	case "macho":
 		return []completionFlag{
 			help,
@@ -154,7 +161,7 @@ func completionArgChoices(command string) []string {
 
 func completionFileArgs(command string) bool {
 	switch command {
-	case "macho", "panic", "persist":
+	case "macho", "panic", "persist", "disk":
 		return true
 	default:
 		return false

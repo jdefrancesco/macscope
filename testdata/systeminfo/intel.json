@@ -1,0 +1,16 @@
+{
+  "SPHardwareDataType": [{
+    "machine_name": "iMac",
+    "machine_model": "iMac19,1",
+    "cpu_type": "Intel Core i9",
+    "current_processor_speed": "3.6 GHz",
+    "physical_memory": "32 GB"
+  }],
+  "SPDisplaysDataType": [{
+    "sppci_model": "Radeon Pro 580X",
+    "spdisplays_vram": "8 GB"
+  }, {
+    "_name": "External GPU",
+    "spdisplays_vram": "4 GB"
+  }]
+}

@@ -72,6 +72,18 @@ func commands() []commandSpec {
 			Run:     runVersion,
 		},
 		{
+			Name:    "specs",
+			Usage:   "macscope specs [--json]",
+			Summary: "List Mac hardware specifications and macOS version.",
+			Run:     runSpecs,
+		},
+		{
+			Name:    "disk",
+			Usage:   "macscope disk [--json] [--all] [--full] [path]",
+			Summary: "List disk capacity, used space, and free space by volume.",
+			Run:     runDisk,
+		},
+		{
 			Name:    "macho",
 			Usage:   "macscope macho [--json] [--full] [--triage] <path>",
 			Summary: "Inspect binary/app identity, architecture, signing, Gatekeeper, xattrs, and linked libraries.",

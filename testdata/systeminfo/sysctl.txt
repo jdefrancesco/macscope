@@ -1,0 +1,4 @@
+hw.memsize: 51539607552
+hw.physicalcpu: 14
+hw.logicalcpu: 14
+hw.machine: arm64

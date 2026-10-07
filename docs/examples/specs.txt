@@ -1,0 +1,35 @@
+Examples:
+
+  macscope specs
+  macscope specs --json
+
+Purpose:
+
+  List Mac hardware specifications and macOS version using system_profiler,
+  sysctl, and sw_vers. Read-only; macOS required; no sudo needed.
+
+Illustrative human output:
+
+  System Specs:
+    Model:                   MacBook Pro (Mac16,8)
+    Processor:               Apple M4 Pro
+    CPU Cores:               14 physical / 14 logical
+    Memory:                  48.0 GiB
+    Architecture:            arm64
+    OS:                      macOS 15.5 (build 24F74)
+
+  Graphics:
+    - Apple M4 Pro / 20 cores
+
+Output notes:
+
+  JSON contains hardware and os objects, with exact memory_bytes and an array
+  of graphics processors. Serial numbers, hardware UUIDs, display identifiers,
+  and hostnames are omitted from both output formats.
+
+Limitations:
+
+  GPU fields depend on what system_profiler exposes. Integrated Apple Silicon
+  graphics may use unified memory without a separate VRAM value. Apple Silicon
+  chip metadata identifies native arm64 hardware; a differing execution
+  architecture from sysctl hw.machine is listed separately, such as under Rosetta.

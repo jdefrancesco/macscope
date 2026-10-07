@@ -1,0 +1,40 @@
+Examples:
+
+  macscope disk
+  macscope disk --all
+  macscope disk "/Volumes/Backup Drive"
+  macscope disk --json .
+  macscope disk --full --all
+
+Purpose:
+
+  List space on mounted local disks, or the volume containing a supplied path.
+  Uses df -k -P -I, plus -l when no path is supplied. Read-only; macOS required;
+  no sudo needed. A supplied file or directory must exist and be accessible.
+
+Illustrative human output:
+
+  Disk Space:
+    Mount                 Filesystem      Size       Used       Free       Use%
+    /                     /dev/disk3s1s1  976.6 MiB   97.7 MiB   195.3 MiB  34%
+    /System/Volumes/Data  /dev/disk3s5    976.6 MiB  664.1 MiB   195.3 MiB  78%
+    /Volumes/Backup Drive /dev/disk4s1      1.9 GiB  488.3 MiB     1.4 GiB  25%
+      - APFS volumes can share capacity and free space; do not add rows together.
+
+Output notes:
+
+  --all includes auxiliary system and virtual local mounts. A supplied path
+  always shows its volume, including auxiliary or network volumes.
+
+  Human sizes use binary units. JSON volumes contain filesystem, mount_point,
+  total_bytes, used_bytes, available_bytes, and capacity_percent. requested_path
+  is included when a path is supplied. Byte counts retain df's 1024-byte precision.
+
+  Usernames in /Users/ paths are redacted in human output by default. --full
+  preserves them. JSON includes unredacted paths.
+
+Limitations:
+
+  APFS volumes share container space. Used + Free can differ from Size; Use%
+  is df's reported capacity percentage rather than Used / Size. Do not sum rows.
+  Unmounted physical disks and directory sizes are not collected.
