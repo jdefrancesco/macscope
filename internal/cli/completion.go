@@ -112,6 +112,8 @@ func completionFlags(command string) []completionFlag {
 		return []completionFlag{help, json}
 	case "attach":
 		return []completionFlag{help, json, last}
+	case "agents", "daemons":
+		return []completionFlag{help, json, {Long: "full", Description: "Preserve usernames in human output."}, {Long: "dir", Description: "Replace default launchd directories."}}
 	case "persist":
 		return []completionFlag{
 			help,
@@ -161,7 +163,7 @@ func completionArgChoices(command string) []string {
 
 func completionFileArgs(command string) bool {
 	switch command {
-	case "macho", "panic", "persist", "disk":
+	case "macho", "panic", "persist", "disk", "agents", "daemons":
 		return true
 	default:
 		return false

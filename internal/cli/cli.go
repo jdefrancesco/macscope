@@ -143,6 +143,8 @@ func commands() []commandSpec {
 			Summary: "Inventory system extensions and classify notable states.",
 			Run:     runSysext,
 		},
+		{Name: "agents", Usage: "macscope agents [--json] [--full] [--dir <path>]", Summary: "List launch agents and login startup settings.", Run: runAgents},
+		{Name: "daemons", Usage: "macscope daemons [--json] [--full] [--dir <path>]", Summary: "List launch daemons and boot startup settings.", Run: runDaemons},
 		{
 			Name:    "completion",
 			Usage:   "macscope completion <bash|zsh|fish>",

@@ -72,6 +72,8 @@ macscope macho [--json] [--full] [--triage] <path>
 macscope proc [--json] <pid-or-name>
 macscope attach [--json] [--last 30m] <pid>
 macscope persist [--json] [--dir <launchd-dir>]
+macscope agents [--json] [--full] [--dir <path>]
+macscope daemons [--json] [--full] [--dir <path>]
 macscope tcc [--json] [--last 30m]
 macscope tcc --watch
 macscope es [--json] [--last 30m]
@@ -275,6 +277,12 @@ Default directories:
 - `~/Library/LaunchAgents`
 
 The command is read-only. It does not unload, delete, quarantine, or modify launchd jobs. Findings call out user-writable program paths, shell-based jobs, downloader/URL arguments, `RunAtLoad`, and `KeepAlive` state.
+
+## agents and daemons
+
+`macscope agents` lists installed launch agents for login sessions; `macscope daemons` lists installed launch daemons for system boot. Both include Apple system and local directories; agents also include the current user's LaunchAgents. Rows show executable, plist path, RunAtLoad, KeepAlive, and plist Disabled settings. These settings describe configuration; launchctl overrides, demand, and other triggers determine actual execution.
+
+Both commands support `--json`, `--full` (preserve usernames in human paths), and repeatable `--dir <path>` to replace default directories for offline inspection. Collection is read-only and normally needs no sudo. XML plists are parsed directly; binary plists use `plutil` without modifying the source. Collection errors remain visible. See [launchd examples](docs/examples/launchd.md) for permissions and limitations.
 
 ## tcc
 
