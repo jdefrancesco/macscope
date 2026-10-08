@@ -147,7 +147,7 @@ func completionFlags(command string) []completionFlag {
 		}
 	case "sysext":
 		return []completionFlag{help, json}
-	case "completion":
+	case "tui", "completion":
 		return []completionFlag{help}
 	default:
 		return nil

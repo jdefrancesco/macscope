@@ -84,6 +84,7 @@ macscope panic --file <panic-file> [--json]
 macscope panic --since 48h [--json]
 macscope timeline --pid <pid> [--last 30m] [--json|--jsonl]
 macscope sysext [--json]
+macscope tui
 macscope completion <bash|zsh|fish>
 ```
 
@@ -320,6 +321,14 @@ It groups extensions by type (network, endpoint security, driver), reports each 
 - `EXTENSION_NOT_ACTIVATED` for other enabled-but-inactive states.
 
 The command is read-only. It does not enable, disable, or remove extensions.
+
+## tui
+
+`macscope tui` launches an interactive full-screen terminal UI built with Bubble Tea. It displays a two-pane browser: the left pane lists available macscope commands, the right pane shows the output of the selected command. Commands execute on demand, with results cached during the session. A spinner and elapsed time provide feedback while collection is in progress.
+
+Navigate with arrow keys or j/k, press enter to run, tab to switch focus, and esc/q to exit. Prompted commands (like `macho` with path, or `proc` with pid/name) will request a value in an interactive prompt. The TUI uses the same collectors and permissions as plain commands; it is read-only and requires no sudo.
+
+The TUI requires an interactive terminal (TTY). Plain-text and `--json` output of all other commands remain unchanged, so scripting and pipes are unaffected.
 
 ## Safety Model
 

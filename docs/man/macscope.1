@@ -78,6 +78,8 @@
 .Cm sysext
 .Op Fl -json
 .Nm
+.Cm tui
+.Nm
 .Cm completion
 .Ar bash | zsh | fish
 .Sh DESCRIPTION
@@ -163,6 +165,14 @@ Inventory installed system extensions using
 .Xr systemextensionsctl 8
 and classify notable states such as multiple active network extensions,
 extensions awaiting user approval, and terminated extensions.
+.It Cm tui
+Launch an interactive full-screen terminal UI browser.
+The left pane lists available macscope commands; the right pane shows the output
+of the selected command.
+Commands execute on demand with results cached during the session.
+Navigate with arrow keys or j/k, press enter to run, tab to switch focus, and esc/q to exit.
+Prompted commands request a value interactively.
+The TUI requires an interactive terminal and does not modify system state.
 .It Cm completion Ar bash | zsh | fish
 Generate shell completion scripts.
 .El
@@ -218,6 +228,7 @@ macscope tcc --last 30m
 macscope vpn
 macscope timeline --pid 123 --jsonl
 macscope sysext
+macscope tui
 source <(macscope completion zsh)
 .Ed
 .Sh NATIVE TOOLS

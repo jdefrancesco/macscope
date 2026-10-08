@@ -1,0 +1,63 @@
+Example:
+
+  macscope tui
+
+Purpose:
+
+  Browse and run macscope commands in an interactive full-screen terminal UI.
+
+Expected shape:
+
+  ┌────────────────────────────────────────────────────────────────────┐
+  │ macscope 0.1.0                                                      │
+  ├────────────────────┬────────────────────────────────────────────────┤
+  │ Commands           │ Command Output (scrollable)                    │
+  │                    │                                                │
+  │ > specs            │ [+] Collecting specs...                       │
+  │   disk             │                                                │
+  │   version          │ Mac model: MacBook Pro (16", M2 Pro, 2023)    │
+  │   persist          │ macOS: 14.0 (23A344)                          │
+  │   agents           │ Processor: Apple M2 Pro (12 cores, 19GB RAM)  │
+  │   daemons          │                                                │
+  │   tcc              │ [✓] elapsed: 0.23s                            │
+  │   es               │                                                │
+  │   vpn              │                                                │
+  │   panic            │                                                │
+  │   macho            │                                                │
+  │   proc             │                                                │
+  │   attach           │                                                │
+  │   timeline         │                                                │
+  │   sysext           │                                                │
+  │                    │                                                │
+  │ Keys:              │                                                │
+  │ ↑/↓ (j/k) select  │                                                │
+  │ enter run         │                                                │
+  │ r rerun           │                                                │
+  │ tab switch        │                                                │
+  │ esc/q quit        │                                                │
+  └────────────────────┴────────────────────────────────────────────────┘
+
+Notes:
+
+  The TUI is a full-screen Bubble Tea application with a two-pane layout.
+  Left pane: command list; right pane: output of the selected command.
+  Results are cached per-command for the duration of the session.
+  A spinner appears while a command collects; elapsed time is shown in the header.
+
+  Commands available: specs, disk, version, persist, agents, daemons, sysext, vpn.
+  Commands with defaults: tcc (--last 30m), es (--last 30m), panic (--last).
+  Commands that prompt: macho (path), proc (pid or name), attach (pid), timeline (pid).
+
+  Keyboard shortcuts:
+    ↑/↓ or j/k    select previous/next command
+    enter         run the selected command
+    r             rerun the current command
+    pgup/pgdn     scroll output up/down
+    tab           switch focus between list and report
+    esc           cancel a prompt or running command
+    q or ctrl+c   quit
+
+  The TUI requires an interactive terminal (TTY). It is read-only and uses the same
+  collectors and permissions as plain commands; no sudo is required.
+  Plain text and --json output of all other commands remain unchanged for scripting.
+  Honors NO_COLOR and MACSCOPE_NO_COLOR environment variables.

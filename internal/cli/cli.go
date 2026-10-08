@@ -146,6 +146,12 @@ func commands() []commandSpec {
 		{Name: "agents", Usage: "macscope agents [--json] [--full] [--dir <path>]", Summary: "List launch agents and login startup settings.", Run: runAgents},
 		{Name: "daemons", Usage: "macscope daemons [--json] [--full] [--dir <path>]", Summary: "List launch daemons and boot startup settings.", Run: runDaemons},
 		{
+			Name:    "tui",
+			Usage:   "macscope tui",
+			Summary: "Browse and run macscope commands in an interactive terminal UI.",
+			Run:     runTUI,
+		},
+		{
 			Name:    "completion",
 			Usage:   "macscope completion <bash|zsh|fish>",
 			Summary: "Generate shell completion scripts.",
