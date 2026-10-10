@@ -4,7 +4,7 @@ Expected shape:
 
 Human output:
 
-  macscope v0.1.0
+  macscope v0.2.0
     Commit:                  abc1234
     Date:                    2026-05-19T12:00:00Z
     Go:                      go1.24.0
@@ -14,7 +14,7 @@ JSON output:
 
   {
     "name": "macscope",
-    "version": "v0.1.0",
+    "version": "v0.2.0",
     "commit": "abc1234",
     "date": "2026-05-19T12:00:00Z",
     "go_version": "go1.24.0",

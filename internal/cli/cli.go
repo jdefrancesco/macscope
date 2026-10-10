@@ -8,7 +8,7 @@ import (
 	"github.com/jdefrancesco/macscope/internal/output"
 )
 
-var version = "dev"
+var version = "v0.2.0"
 var buildCommit = "unknown"
 var buildDate = "unknown"
 

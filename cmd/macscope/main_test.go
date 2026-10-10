@@ -29,12 +29,12 @@ func TestCommandSmokeHelpAndCompletions(t *testing.T) {
 		{
 			name: "version",
 			args: []string{"version"},
-			want: []string{"macscope dev", "Commit:", "Platform:"},
+			want: []string{"macscope v0.2.0", "Commit:", "Platform:"},
 		},
 		{
 			name: "version json",
 			args: []string{"version", "--json"},
-			want: []string{`"name": "macscope"`, `"version": "dev"`, `"goos":`},
+			want: []string{`"name": "macscope"`, `"version": "v0.2.0"`, `"goos":`},
 			json: true,
 		},
 		{

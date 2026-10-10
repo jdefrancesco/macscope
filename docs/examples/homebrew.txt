@@ -1,26 +1,26 @@
 Expected shape:
 
   packaging/homebrew/macscope.rb
-  make homebrew-formula VERSION=v0.1.0 URL=<release-url> SHA256=<sha256>
-  make verify-homebrew-formula VERSION=v0.1.0 URL=<release-url> SHA256=<sha256>
+  make homebrew-formula VERSION=v0.2.0 URL=<release-url> SHA256=<sha256>
+  make verify-homebrew-formula VERSION=v0.2.0 URL=<release-url> SHA256=<sha256>
 
 Build a release archive and checksum:
 
-  make dist VERSION=v0.1.0 GOOS=darwin GOARCH=arm64
-  SHA256=$(cut -d ' ' -f1 dist/macscope_v0.1.0_darwin_arm64.tar.gz.sha256)
+  make dist VERSION=v0.2.0 GOOS=darwin GOARCH=arm64
+  SHA256=$(cut -d ' ' -f1 dist/macscope_v0.2.0_darwin_arm64.tar.gz.sha256)
 
 Render the formula:
 
   make homebrew-formula \
-    VERSION=v0.1.0 \
-    URL=https://example.com/macscope_v0.1.0_darwin_arm64.tar.gz \
+    VERSION=v0.2.0 \
+    URL=https://example.com/macscope_v0.2.0_darwin_arm64.tar.gz \
     SHA256="$SHA256"
 
 Verify formula structure and install paths:
 
   make verify-homebrew-formula \
-    VERSION=v0.1.0 \
-    URL=https://example.com/macscope_v0.1.0_darwin_arm64.tar.gz \
+    VERSION=v0.2.0 \
+    URL=https://example.com/macscope_v0.2.0_darwin_arm64.tar.gz \
     SHA256="$SHA256"
 
 Generated formula:

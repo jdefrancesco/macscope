@@ -3,12 +3,16 @@ Expected shape:
   make install PREFIX="$HOME/.local"
   make install-completions PREFIX="$HOME/.local"
   make install-man PREFIX="$HOME/.local"
-  make homebrew-formula VERSION=v0.1.0 URL=<release-url> SHA256=<sha256>
-  make release VERSION=v0.1.0
+  make homebrew-formula VERSION=v0.2.0 URL=<release-url> SHA256=<sha256>
+  make release VERSION=v0.2.0
   make lint-workflows
   make clean-artifacts
 
 Install:
+
+  go install github.com/jdefrancesco/macscope/cmd/macscope@latest
+  go install github.com/jdefrancesco/macscope/cmd/macscope@v0.2.0
+  macscope version
 
   make install PREFIX="$HOME/.local"
   make install PREFIX=/usr DESTDIR="$PWD/pkgroot"
@@ -26,24 +30,24 @@ Manual page:
 
 Release artifact:
 
-  make release VERSION=v0.1.0
-  make dist VERSION=v0.1.0 GOOS=darwin GOARCH=arm64
+  make release VERSION=v0.2.0
+  make dist VERSION=v0.2.0 GOOS=darwin GOARCH=arm64
 
 Homebrew formula:
 
-  SHA256=$(cut -d ' ' -f1 dist/macscope_v0.1.0_darwin_arm64.tar.gz.sha256)
-  make homebrew-formula VERSION=v0.1.0 URL=https://example.com/macscope_v0.1.0_darwin_arm64.tar.gz SHA256="$SHA256"
-  make verify-homebrew-formula VERSION=v0.1.0 URL=https://example.com/macscope_v0.1.0_darwin_arm64.tar.gz SHA256="$SHA256"
+  SHA256=$(cut -d ' ' -f1 dist/macscope_v0.2.0_darwin_arm64.tar.gz.sha256)
+  make homebrew-formula VERSION=v0.2.0 URL=https://example.com/macscope_v0.2.0_darwin_arm64.tar.gz SHA256="$SHA256"
+  make verify-homebrew-formula VERSION=v0.2.0 URL=https://example.com/macscope_v0.2.0_darwin_arm64.tar.gz SHA256="$SHA256"
 
 GitHub release workflow:
 
-  git tag v0.1.0
-  git push origin v0.1.0
+  git tag -a v0.2.0 -m "macscope v0.2.0"
+  git push origin v0.2.0
 
 The tag workflow publishes:
 
-  dist/macscope_v0.1.0_darwin_arm64.tar.gz
-  dist/macscope_v0.1.0_darwin_arm64.tar.gz.sha256
+  dist/macscope_v0.2.0_darwin_arm64.tar.gz
+  dist/macscope_v0.2.0_darwin_arm64.tar.gz.sha256
   dist/homebrew/macscope.rb
 
 Workflow lint:

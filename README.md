@@ -59,7 +59,7 @@ make clean-artifacts
 make install PREFIX="$HOME/.local"
 make install-completions PREFIX="$HOME/.local"
 make install-man PREFIX="$HOME/.local"
-make homebrew-formula VERSION=v0.1.0 URL=https://example.com/macscope_v0.1.0_darwin_arm64.tar.gz SHA256=<sha256>
+make homebrew-formula VERSION=v0.2.0 URL=https://example.com/macscope_v0.2.0_darwin_arm64.tar.gz SHA256=<sha256>
 make release
 ```
 
@@ -115,7 +115,7 @@ Default human output redacts usernames in `/Users/` paths. `--full` preserves pa
 `macscope version [--json]` reports the CLI version, build commit, build date, Go version, and target platform. Release builds inject these fields through Makefile `LDFLAGS`:
 
 ```sh
-make build VERSION=v0.1.0
+make build VERSION=v0.2.0
 macscope version
 macscope version --json
 ```
@@ -135,6 +135,17 @@ macscope completion fish | source
 For a persistent install, write the generated script into the completion directory managed by your shell or package manager.
 
 ## Install And Release
+
+Install or update with Go:
+
+```sh
+go install github.com/jdefrancesco/macscope/cmd/macscope@latest
+macscope version
+```
+
+Pin this release with `go install github.com/jdefrancesco/macscope/cmd/macscope@v0.2.0`.
+Go installs the binary in `GOBIN`, or `$(go env GOPATH)/bin` when `GOBIN` is unset; include that directory in your `PATH`.
+Plain Go builds include the source release version. Packaged builds also include the commit and build date supplied by the Makefile.
 
 `make install` builds the binary and installs it under `$(PREFIX)/bin`. The default `PREFIX` is `/usr/local`; override it for user-local installs:
 
@@ -162,8 +173,8 @@ make uninstall-man PREFIX="$HOME/.local"
 `make release` runs checks and writes a tarball plus SHA-256 checksum under `dist/`. Override `VERSION`, `GOOS`, or `GOARCH` for explicit release builds:
 
 ```sh
-make release VERSION=v0.1.0
-make dist VERSION=v0.1.0 GOOS=darwin GOARCH=arm64
+make release VERSION=v0.2.0
+make dist VERSION=v0.2.0 GOOS=darwin GOARCH=arm64
 ```
 
 CI runs the same `make check`, `make smoke`, and `make dist` paths on macOS. `make lint-workflows` runs `actionlint` locally when it is installed.
@@ -182,11 +193,11 @@ make clean-artifacts
 `packaging/homebrew/macscope.rb` is a Homebrew formula template for the release tarball produced by `make dist`. Render a concrete formula into `dist/homebrew/macscope.rb` with:
 
 ```sh
-make dist VERSION=v0.1.0 GOOS=darwin GOARCH=arm64
-SHA256=$(cut -d ' ' -f1 dist/macscope_v0.1.0_darwin_arm64.tar.gz.sha256)
+make dist VERSION=v0.2.0 GOOS=darwin GOARCH=arm64
+SHA256=$(cut -d ' ' -f1 dist/macscope_v0.2.0_darwin_arm64.tar.gz.sha256)
 make homebrew-formula \
-  VERSION=v0.1.0 \
-  URL=https://example.com/macscope_v0.1.0_darwin_arm64.tar.gz \
+  VERSION=v0.2.0 \
+  URL=https://example.com/macscope_v0.2.0_darwin_arm64.tar.gz \
   SHA256="$SHA256"
 ```
 
@@ -199,12 +210,12 @@ The helper strips a leading `v` from `VERSION` for the formula's `version` field
 Verify the rendered formula shape and install paths with:
 
 ```sh
-make verify-homebrew-formula VERSION=v0.1.0 URL=https://example.com/macscope_v0.1.0_darwin_arm64.tar.gz SHA256="$SHA256"
+make verify-homebrew-formula VERSION=v0.2.0 URL=https://example.com/macscope_v0.2.0_darwin_arm64.tar.gz SHA256="$SHA256"
 ```
 
 ## Release Workflow
 
-Pushing a version tag like `v0.1.0` runs `.github/workflows/release.yml`. The workflow:
+Pushing a version tag like `v0.2.0` runs `.github/workflows/release.yml`. The workflow:
 
 - runs `make check` and `make smoke`
 - builds `dist/macscope_<version>_darwin_arm64.tar.gz`
