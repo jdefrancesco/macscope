@@ -110,6 +110,8 @@ func completionFlags(command string) []completionFlag {
 		}
 	case "proc":
 		return []completionFlag{help, json}
+	case "ipc":
+		return []completionFlag{help, json, {Long: "full", Description: "Preserve paths and include raw command output."}}
 	case "attach":
 		return []completionFlag{help, json, last}
 	case "agents", "daemons":
@@ -172,7 +174,7 @@ func completionFileArgs(command string) bool {
 
 func completionGenericArgs(command string) bool {
 	switch command {
-	case "proc", "attach", "vpn", "timeline":
+	case "proc", "ipc", "attach", "vpn", "timeline":
 		return true
 	default:
 		return false

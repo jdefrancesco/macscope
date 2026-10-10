@@ -1,0 +1,11 @@
+p42<NUL>
+fcwd<NUL>a <NUL>tDIR<NUL>n/Users/alice<NUL>
+f3<NUL>au<NUL>tunix<NUL>n/Users/alice/Library/example socket<NUL>
+f4<NUL>aw<NUL>tPIPE<NUL>n->0x1234<NUL>
+f5<NUL>ar<NUL>tFIFO<NUL>n/tmp/example fifo<NUL>
+f6<NUL>au<NUL>tPSXSHM<NUL>nshared region<NUL>
+f7<NUL>au<NUL>tPSXSEM<NUL>nexample sem<NUL>
+f8<NUL>au<NUL>tIPv4<NUL>n127.0.0.1:1234<NUL>
+f9<NUL>ar<NUL>tREG<NUL>n/tmp/file<NUL>
+p99<NUL>
+f3<NUL>au<NUL>tunix<NUL>n/tmp/other-process<NUL>

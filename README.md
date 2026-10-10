@@ -10,6 +10,7 @@ Current status:
 - `macscope macho` is implemented in Go.
 - `macscope panic` is implemented in Go.
 - `macscope proc` and `macscope attach` are implemented in Go.
+- `macscope ipc` shows process IPC descriptors and Mach ports.
 - `macscope persist` is implemented in Go.
 - `macscope tcc`, `macscope es`, and `macscope vpn` are implemented in Go.
 - `macscope timeline` is implemented in Go.
@@ -32,6 +33,7 @@ go run ./cmd/macscope macho --triage /bin/ls
 go run ./cmd/macscope macho --json /bin/ls
 go run ./cmd/macscope panic --file testdata/panic/watchdog.panic
 go run ./cmd/macscope proc <pid-or-name>
+go run ./cmd/macscope ipc <pid-or-name>
 go run ./cmd/macscope attach <pid>
 go run ./cmd/macscope persist
 go run ./cmd/macscope tcc --last 30m
@@ -70,6 +72,7 @@ macscope specs [--json]
 macscope disk [--json] [--all] [--full] [path]
 macscope macho [--json] [--full] [--triage] <path>
 macscope proc [--json] <pid-or-name>
+macscope ipc [--json] [--full] <pid-or-name>
 macscope attach [--json] [--last 30m] <pid>
 macscope persist [--json] [--dir <launchd-dir>]
 macscope agents [--json] [--full] [--dir <path>]
@@ -87,6 +90,25 @@ macscope sysext [--json]
 macscope tui
 macscope completion <bash|zsh|fish>
 ```
+
+## IPC And Mach Ports
+
+`macscope ipc [--json] [--full] <pid-or-name>` takes a snapshot of a process's Mach port namespace and local IPC descriptors:
+
+```sh
+macscope ipc 1234
+macscope ipc example
+macscope ipc --json 1234
+macscope ipc --full 1234
+```
+
+`lsmp -p <pid> -j <temporary-file>` supplies Mach port rights, port sets, dead names, kernel object types, queue limits, queued message counts, and peer PIDs/names where available. A secure temporary file is removed after collection. Mach port names are local to a task and are separate from TCP/UDP port numbers. Unknown queue values appear as `-`, while reported zero values appear as `0`. Queue details on send rights describe the receiving port. Port-set members are nested in JSON and shown as member rows in text.
+
+`lsof -nP -a -p <pid> -F0pftan` supplies Unix sockets, pipes, FIFOs, POSIX shared-memory and semaphore descriptors. `ps`/`pgrep` resolve the target using the same newest-match behavior as `proc`; use a PID for an exact target. The command is also available in `macscope tui` and shell completions.
+
+Each source has an `ok`, `partial`, or `unavailable` status with explanations. Access failures leave available results intact and never imply that the process has no ports. If both sources are unavailable, the command emits the report and exits nonzero. This requires macOS; Mach inspection requires task-read access. Root can improve `lsmp` visibility and peer resolution, but protected processes can remain inaccessible. macscope does not invoke sudo or change security policy.
+
+Default human output redacts usernames in `/Users/` paths. `--full` preserves paths and includes raw command stdout/stderr; JSON preserves parsed paths, with raw commands added by `--json --full`. Terminal controls are escaped in human output. This is a port/descriptor snapshot, with no message payloads, XPC service-name mapping, system-wide inventory, System V IPC collection, or anonymous shared-memory mapping inventory. Visibility depends on native-tool access and can change while a process runs. See [the IPC examples](docs/examples/ipc.txt).
 
 ## Version Metadata
 

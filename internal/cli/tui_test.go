@@ -60,6 +60,7 @@ func TestTUIEntriesPresets(t *testing.T) {
 		{name: "panic", args: []string{"--last"}},
 		{name: "macho", prompt: "path"},
 		{name: "proc", prompt: "pid or name"},
+		{name: "ipc", prompt: "pid or name"},
 		{name: "attach", prompt: "pid"},
 		{name: "timeline", args: []string{"--pid"}, prompt: "pid"},
 	}

@@ -1,4 +1,4 @@
-.Dd October 7, 2026
+.Dd October 9, 2026
 .Dt MACSCOPE 1
 .Os
 .Sh NAME
@@ -28,6 +28,11 @@
 .Nm
 .Cm proc
 .Op Fl -json
+.Ar pid-or-name
+.Nm
+.Cm ipc
+.Op Fl -json
+.Op Fl -full
 .Ar pid-or-name
 .Nm
 .Cm attach
@@ -130,6 +135,24 @@ flag prints a compact 0-100 score with signals and next actions.
 .It Cm proc Op Fl -json Ar pid-or-name
 Resolve a running process using native process tools, summarize identity
 fields, and check executable signing when a path is available.
+.It Cm ipc Op Fl -json Op Fl -full Ar pid-or-name
+Show process Mach port rights, queue limits, message counts, and available
+peer PIDs/names using lsmp, plus Unix sockets, pipes, FIFOs, POSIX shared-memory
+and semaphore descriptors using lsof.
+Port names are local to the task, not TCP/UDP port numbers.
+Unknown queue values are shown as a dash; zero means a reported zero.
+Each source reports ok, partial, or unavailable with explanations.
+Available local IPC survives Mach task-access failures.
+Requires macOS and task-read access for Mach inspection.
+Root can improve visibility, but protected processes may remain inaccessible.
+The command does not invoke sudo or modify security policy.
+.Fl -full
+preserves usernames in paths and includes raw command output.
+JSON includes unredacted parsed fields; raw output requires
+.Fl -full .
+This is a snapshot, not a message trace or an XPC service-name map.
+System V IPC and anonymous shared-memory mappings are outside this view.
+If both sources are unavailable, the report is emitted with a nonzero exit status.
 .It Cm attach Op Fl -json Op Fl -last Ar duration Ar pid
 Explain likely LLDB attach failures using process identity, developer group
 membership, signing state, and recent attach-relevant unified logs.

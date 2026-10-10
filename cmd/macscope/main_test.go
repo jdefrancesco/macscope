@@ -48,6 +48,11 @@ func TestCommandSmokeHelpAndCompletions(t *testing.T) {
 			want: []string{"macscope proc [--json] <pid-or-name>"},
 		},
 		{
+			name: "ipc help",
+			args: []string{"ipc", "--help"},
+			want: []string{"macscope ipc [--json] [--full] <pid-or-name>", "lsmp", "lsof"},
+		},
+		{
 			name: "attach help",
 			args: []string{"attach", "--help"},
 			want: []string{"macscope attach [--json] [--last 30m] <pid>"},

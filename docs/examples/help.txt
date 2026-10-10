@@ -26,6 +26,8 @@ Expected shape:
         Inspect binary/app identity, architecture, signing, Gatekeeper, xattrs, and linked libraries.
     macscope proc [--json] <pid-or-name>
         Triage a running process by PID or name.
+    macscope ipc [--json] [--full] <pid-or-name>
+        Show process IPC descriptors and Mach port rights, queues, and peers.
     macscope attach [--json] [--last 30m] <pid>
         Explain likely LLDB attach failures using signing, group, and log evidence.
     macscope persist [--json] [--dir <launchd-dir>]

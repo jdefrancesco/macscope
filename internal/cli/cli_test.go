@@ -30,6 +30,7 @@ func TestRunHelp(t *testing.T) {
 		"macscope specs [--json]",
 		"macscope disk [--json] [--all] [--full] [path]",
 		"macscope macho [--json] [--full] [--triage] <path>",
+		"macscope ipc [--json] [--full] <pid-or-name>",
 		"macscope panic --last | --file <panic-file> | --since 48h [--json]",
 		"macscope persist [--json] [--dir <launchd-dir>]",
 		"macscope tcc [--json] [--last 30m] | --watch",

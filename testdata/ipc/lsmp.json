@@ -1,0 +1,19 @@
+{
+  "version": "1.0",
+  "processes": [
+    {
+      "pid": 42,
+      "name": "example",
+      "total": 6,
+      "ports": [
+        {"name": "0x00000103", "ipc-object": "0x11111111", "rights": ["send"], "send_rights": 2, "identifier": "0x00000203", "pid": 77, "process": "service", "queue_limit": 5, "msg_count": 1},
+        {"type": "port", "name": "0x00000203", "ipc-object": "0x22222222", "rights": ["recv", "send"], "port_status_flags": ["guarded"], "recv_rights": 1, "send_rights": 1, "send_once_rights": 0, "queue_limit": 5, "msg_count": 0},
+        {"type": "port set", "name": "0x00000303", "ipc-object": "0x33333333", "members": [{"ipc-object": "0x22222222", "rights": ["recv"], "identifier": "0x00000203", "pid": 42, "process": "example", "queue_limit": 5, "msg_count": 0}]},
+        {"type": "dead name", "name": "0x00000403", "ipc-object": "0x00000000", "send_rights": 1},
+        {"name": "0x00000503", "ipc-object": "0x55555555", "rights": ["send once"], "send_rights": 0, "identifier": "0x00000000", "pid": -1, "process": "unknown"},
+        {"type": "TASK-READ", "name": "0x00000603", "ipc-object": "0x66666666", "rights": ["send"], "send_rights": 1, "identifier": "0x66666666", "pid": 42, "process": "example", "description": "example task"}
+      ]
+    },
+    {"pid": 77, "name": "service", "total": 0, "ports": []}
+  ]
+}

@@ -96,6 +96,12 @@ func commands() []commandSpec {
 			Run:     runProc,
 		},
 		{
+			Name:    "ipc",
+			Usage:   ipcUsage,
+			Summary: "Show process IPC descriptors and Mach port rights, queues, and peers.",
+			Run:     runIPC,
+		},
+		{
 			Name:    "attach",
 			Usage:   "macscope attach [--json] [--last 30m] <pid>",
 			Summary: "Explain likely LLDB attach failures using signing, group, and log evidence.",

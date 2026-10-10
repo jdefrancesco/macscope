@@ -1,0 +1,52 @@
+Examples:
+
+  macscope ipc 1234
+  macscope ipc example
+  macscope ipc --json 1234
+  macscope ipc --full 1234
+  macscope ipc --json --full 1234
+
+Purpose:
+
+  Show a process's local IPC descriptors and Mach port namespace.
+  Also available as the ipc entry in macscope tui.
+
+Native tools:
+
+  ps / pgrep: resolve a PID or the newest matching process name.
+  lsmp -p <pid> -j <temporary-file>: Mach port rights and available queue/peer details.
+  lsof -nP -a -p <pid> -F0pftan: Unix sockets, pipes, FIFOs, POSIX shared memory,
+  and POSIX semaphore descriptors.
+
+Output interpretation:
+
+  Mach port names belong to the target's namespace, not to the TCP/UDP port range.
+  receive accepts messages, send/send_once sends, port_set groups receive rights,
+  and dead_name refers to a port that no longer exists.
+  Queue is the queue limit, Queued is the message count. A dash means unavailable;
+  zero means the native tool reported zero. Send-right queue details, when available,
+  describe the receiving port. Peer PID/name and object type are shown only when
+  provided by lsmp. Port-set members are nested in JSON and listed as member rows
+  in text. Ports Listed counts top-level names, excluding those member rows.
+
+  Each source reports ok, partial, or unavailable, plus warnings.
+  Access failures never mean that the target has zero ports or descriptors.
+  If both sources are unavailable, the command prints its report and exits nonzero.
+
+Permissions and privacy:
+
+  Requires macOS. Read-only; does not invoke sudo or alter security policy.
+  lsmp requires task-read access. Root can improve visibility and peer resolution,
+  but protected processes can remain inaccessible. Available lsof results survive
+  a Mach collection failure. A secure temporary JSON file is removed after lsmp.
+  Human output redacts usernames in /Users/ paths and escapes terminal controls.
+  --full preserves paths and includes raw command stdout/stderr.
+  JSON preserves unredacted parsed fields; --json --full adds raw commands.
+
+Limitations:
+
+  A snapshot, not an IPC message trace, message-payload decoder, XPC service-name
+  map, or system-wide IPC inventory. Anonymous shared-memory mappings and System V
+  IPC objects are outside the lsof descriptor view. Native tools may omit endpoints
+  or peers due to access policy or process changes during collection.
+  Name lookup follows proc's newest-match behavior; supply a PID for an exact target.

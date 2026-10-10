@@ -65,6 +65,7 @@ func tuiPresets() map[string]tuiPreset {
 		"panic":    {Args: []string{"--last"}},
 		"macho":    {Prompt: "path"},
 		"proc":     {Prompt: "pid or name"},
+		"ipc":      {Prompt: "pid or name"},
 		"attach":   {Prompt: "pid"},
 		"timeline": {Args: []string{"--pid"}, Prompt: "pid"},
 	}
