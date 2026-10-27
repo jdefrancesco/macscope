@@ -5,6 +5,8 @@ Examples:
   macscope ipc --json 1234
   macscope ipc --full 1234
   macscope ipc --json --full 1234
+  macscope ipc --watch 1234
+  macscope ipc --watch --interval 500ms --count 5 --jsonl 1234
 
 Purpose:
 
@@ -50,3 +52,23 @@ Limitations:
   IPC objects are outside the lsof descriptor view. Native tools may omit endpoints
   or peers due to access policy or process changes during collection.
   Name lookup follows proc's newest-match behavior; supply a PID for an exact target.
+
+Watch mode:
+
+  Pins one PID, its executable path, and ps start time. Observed exit, identity
+  change, or identity-access failure stops the watch. Start times have second
+  resolution; same-second PID reuse cannot be excluded.
+  The first event is a baseline; subsequent events highlight added/removed ports,
+  changed rights and metadata, queue growth, and descriptor changes.
+  Two complete (ok) snapshots are required to compare a source. Access loss never
+  becomes a false mass removal; recovery establishes a new baseline.
+  Port name reuse with a changed IPC object produces removal/addition events.
+
+  --interval is the delay after each completed snapshot, default 2s, bounded
+  between 250ms and 24h. Collection time adds to that delay. Polling can miss
+  short-lived changes; it does not trace IPC traffic or inspect message payloads.
+  --count N bounds the snapshot count. Ctrl-C cancels collection.
+  --jsonl emits complete watch events, one JSON object per line. --json is for
+  single snapshots and cannot be combined with --watch.
+  The TUI IPC entry remains a snapshot; its separate ipc watch entry streams
+  changes live until Esc. Recent output is retained in bounded buffers.

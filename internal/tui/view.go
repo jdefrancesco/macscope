@@ -11,7 +11,7 @@ import (
 const (
 	appName    = "macscope"
 	appTagline = "macOS introspection & triage"
-	keyHelp    = "↑/↓ select • enter run • r rerun • tab focus • pgup/pgdn scroll • esc cancel • q quit"
+	keyHelp    = "↑/↓ auto-load • enter run/input • r refresh • tab focus • pgup/pgdn scroll • esc cancel • q quit"
 	loadingMsg = "loading…"
 	listTitle  = "Commands"
 
@@ -82,7 +82,10 @@ func (m Model) listItem(index, width int) string {
 func (m Model) reportPane(l layout) string {
 	body := m.viewport.View()
 	if m.isRunning(m.cursor) {
-		body = m.spinner.View() + " " + m.styles.muted.Render("running…")
+		entry, _ := m.selected()
+		if !entry.Live || strings.TrimSpace(m.viewport.View()) == "" {
+			body = m.spinner.View() + " " + m.styles.muted.Render("running…")
+		}
 	}
 	width, _ := l.viewportSize()
 	header := lipgloss.NewStyle().MaxWidth(width).Render(m.reportHeader())
@@ -142,7 +145,12 @@ func extraArgs(entry Entry, args []string) []string {
 func (m Model) statusLine() string {
 	if m.mode == modePrompt {
 		entry, _ := m.selected()
-		line := m.styles.promptLabel.Render(entry.Prompt+" "+cursorMarker) + " " + m.input.View()
+		fields := entry.promptFields()
+		label := entry.Prompt
+		if m.promptIndex < len(fields) {
+			label = fields[m.promptIndex].Label
+		}
+		line := m.styles.promptLabel.Render(label+" "+cursorMarker) + " " + m.input.View()
 		if m.promptErr != "" {
 			line += "  " + m.styles.danger.Render(m.promptErr)
 		}

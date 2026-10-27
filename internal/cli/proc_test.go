@@ -24,7 +24,7 @@ func TestRunProcHelp(t *testing.T) {
 	if stderr.Len() != 0 {
 		t.Fatalf("stderr = %q, want empty", stderr.String())
 	}
-	if !strings.Contains(stdout.String(), "macscope proc [--json] <pid-or-name>") {
+	if !strings.Contains(stdout.String(), "macscope proc [--json] [--maps] [--tree] [--full] <pid-or-name>") {
 		t.Fatalf("stdout = %q, want proc usage", stdout.String())
 	}
 }

@@ -11,6 +11,8 @@ Current status:
 - `macscope panic` is implemented in Go.
 - `macscope proc` and `macscope attach` are implemented in Go.
 - `macscope ipc` shows process IPC descriptors and Mach ports.
+- `macscope proc --maps --tree` adds runtime memory/image mappings and process ancestry.
+- `macscope ipc --watch` tracks changes; `macscope collect` saves private local evidence bundles.
 - `macscope persist` is implemented in Go.
 - `macscope tcc`, `macscope es`, and `macscope vpn` are implemented in Go.
 - `macscope timeline` is implemented in Go.
@@ -34,6 +36,9 @@ go run ./cmd/macscope macho --json /bin/ls
 go run ./cmd/macscope panic --file testdata/panic/watchdog.panic
 go run ./cmd/macscope proc <pid-or-name>
 go run ./cmd/macscope ipc <pid-or-name>
+go run ./cmd/macscope proc --maps --tree <pid-or-name>
+go run ./cmd/macscope ipc --watch --interval 2s <pid-or-name>
+go run ./cmd/macscope collect --pid <pid> --out ./case-evidence
 go run ./cmd/macscope attach <pid>
 go run ./cmd/macscope persist
 go run ./cmd/macscope tcc --last 30m
@@ -59,7 +64,7 @@ make clean-artifacts
 make install PREFIX="$HOME/.local"
 make install-completions PREFIX="$HOME/.local"
 make install-man PREFIX="$HOME/.local"
-make homebrew-formula VERSION=v0.2.0 URL=https://example.com/macscope_v0.2.0_darwin_arm64.tar.gz SHA256=<sha256>
+make homebrew-formula VERSION=v0.3.0 URL=https://example.com/macscope_v0.3.0_darwin_arm64.tar.gz SHA256=<sha256>
 make release
 ```
 
@@ -71,8 +76,10 @@ The first live collectors will wrap native macOS tools with `exec.CommandContext
 macscope specs [--json]
 macscope disk [--json] [--all] [--full] [path]
 macscope macho [--json] [--full] [--triage] <path>
-macscope proc [--json] <pid-or-name>
+macscope proc [--json] [--maps] [--tree] [--full] <pid-or-name>
 macscope ipc [--json] [--full] <pid-or-name>
+macscope ipc --watch [--interval 2s] [--count N] [--jsonl] [--full] <pid-or-name>
+macscope collect --pid <pid> --out <new-directory> [--reports proc,ipc,maps,tree] [--json]
 macscope attach [--json] [--last 30m] <pid>
 macscope persist [--json] [--dir <launchd-dir>]
 macscope agents [--json] [--full] [--dir <path>]
@@ -110,12 +117,48 @@ Each source has an `ok`, `partial`, or `unavailable` status with explanations. A
 
 Default human output redacts usernames in `/Users/` paths. `--full` preserves paths and includes raw command stdout/stderr; JSON preserves parsed paths, with raw commands added by `--json --full`. Terminal controls are escaped in human output. This is a port/descriptor snapshot, with no message payloads, XPC service-name mapping, system-wide inventory, System V IPC collection, or anonymous shared-memory mapping inventory. Visibility depends on native-tool access and can change while a process runs. See [the IPC examples](docs/examples/ipc.txt).
 
+## Runtime Maps And Process Ancestry
+
+```sh
+macscope proc --maps 1234
+macscope proc --tree 1234
+macscope proc --maps --tree --json 1234
+```
+
+`--maps` runs `vmmap -w <pid>` and reports region address ranges, exact virtual size from those ranges, current/maximum protections, sharing modes, and mapped image paths. Image paths are grouped from named Mach-O segment mappings; this is not a complete dyld image inventory or proof that a library is actively used. Virtual size is not resident memory usage. No process-memory payload is read or saved. `--full` adds raw vmmap output and preserves home paths in human output. JSON retains raw parsed paths.
+
+`--tree` uses a `ps` snapshot to show ancestors (nearest parent first), the target, and direct children, including executable paths and local start times. Paths containing spaces are preserved. Missing ancestors, cycles, inaccessible data, and target changes are reported explicitly. Start times have second resolution; snapshots are observations rather than an atomic process history. Both collectors require macOS and retain partial/access-denied results without changing security policy. The TUI's `proc` entry includes both views. See [process examples](docs/examples/proc.txt).
+
+## IPC Watch
+
+```sh
+macscope ipc --watch --interval 2s 1234
+macscope ipc --watch --count 5 --jsonl 1234
+```
+
+Watch mode pins the selected PID, its `ps` start time, and executable path. It stops if an observed identity changes or becomes unavailable. Start-time checks have second resolution and cannot rule out same-second PID reuse. Each poll reports added/removed Mach port names, changed rights or metadata, queue/message-count changes, and local IPC descriptor changes. Port name reuse with a changed IPC object is reported as removal/addition. Deltas for a source require two `ok` snapshots; partial or unavailable sources are never treated as empty. A recovered source establishes a new baseline.
+
+The interval is a delay between completed snapshots (default `2s`, range `250ms` to `24h`), not a guaranteed sampling rate. Short-lived activity between polls can be missed. `--count N` bounds the number of snapshots; Ctrl-C cancels an ongoing watch. `--jsonl` emits one complete event per line; `--json` remains a single-snapshot format and cannot be combined with `--watch`. This is metadata polling, not message-content or traffic capture. The TUI has a separate `ipc watch` entry with live output; Esc stops it, and older output is bounded while recent changes remain visible. The ordinary `ipc` entry remains a single snapshot.
+
+## Local Evidence Bundles
+
+```sh
+macscope collect --pid 1234 --out ./case-1234
+macscope collect --pid 1234 --out ./case-maps --reports maps,tree --json
+```
+
+`collect` saves any selection of `proc`, `ipc`, `maps`, and `tree` reports (all four by default), plus raw native command stdout/stderr in `commands.json`. `manifest.json` records tool version, process identity, UTC capture times, per-report availability, file sizes, and SHA-256 hashes of each evidence file. The manifest does not hash itself; hashes allow change detection and do not authenticate evidence. Commands are limited to the selected built-in collectors: `ps`, `codesign`, `lsmp`, `lsof`, and `vmmap`.
+
+The explicitly supplied output directory must be new, and its parent must exist. Files use mode `0600` inside a `0700` directory. Existing paths, including symlinks, are refused. Raw evidence is unredacted and may include sensitive paths, process arguments, entitlements, and identifiers. Collection prints a notice to stderr and never uploads data or invokes sudo. `--json` emits the manifest on stdout; evidence stays on disk. The TUI's `collect` entry asks separately for a PID and a new output directory before writing. Rerun prompts again rather than reusing the old destination.
+
+Permission failures remain in the reports and raw evidence. Collection is sequential, not atomic; observed target changes mark a bundle partial. Cancellation preserves completed evidence and attempts to finalize a partial manifest. Write failures return an error and preserve already written files; no successful manifest path is reported if manifest writing fails. Bundle creation can succeed with a `partial` status, so automation should inspect the manifest. See [bundle examples](docs/examples/collect.txt).
+
 ## Version Metadata
 
 `macscope version [--json]` reports the CLI version, build commit, build date, Go version, and target platform. Release builds inject these fields through Makefile `LDFLAGS`:
 
 ```sh
-make build VERSION=v0.2.0
+make build VERSION=v0.3.0
 macscope version
 macscope version --json
 ```
@@ -143,7 +186,7 @@ go install github.com/jdefrancesco/macscope/cmd/macscope@latest
 macscope version
 ```
 
-Pin this release with `go install github.com/jdefrancesco/macscope/cmd/macscope@v0.2.0`.
+Pin this release with `go install github.com/jdefrancesco/macscope/cmd/macscope@v0.3.0`.
 Go installs the binary in `GOBIN`, or `$(go env GOPATH)/bin` when `GOBIN` is unset; include that directory in your `PATH`.
 Plain Go builds include the source release version. Packaged builds also include the commit and build date supplied by the Makefile.
 
@@ -173,8 +216,8 @@ make uninstall-man PREFIX="$HOME/.local"
 `make release` runs checks and writes a tarball plus SHA-256 checksum under `dist/`. Override `VERSION`, `GOOS`, or `GOARCH` for explicit release builds:
 
 ```sh
-make release VERSION=v0.2.0
-make dist VERSION=v0.2.0 GOOS=darwin GOARCH=arm64
+make release VERSION=v0.3.0
+make dist VERSION=v0.3.0 GOOS=darwin GOARCH=arm64
 ```
 
 CI runs the same `make check`, `make smoke`, and `make dist` paths on macOS. `make lint-workflows` runs `actionlint` locally when it is installed.
@@ -193,11 +236,11 @@ make clean-artifacts
 `packaging/homebrew/macscope.rb` is a Homebrew formula template for the release tarball produced by `make dist`. Render a concrete formula into `dist/homebrew/macscope.rb` with:
 
 ```sh
-make dist VERSION=v0.2.0 GOOS=darwin GOARCH=arm64
-SHA256=$(cut -d ' ' -f1 dist/macscope_v0.2.0_darwin_arm64.tar.gz.sha256)
+make dist VERSION=v0.3.0 GOOS=darwin GOARCH=arm64
+SHA256=$(cut -d ' ' -f1 dist/macscope_v0.3.0_darwin_arm64.tar.gz.sha256)
 make homebrew-formula \
-  VERSION=v0.2.0 \
-  URL=https://example.com/macscope_v0.2.0_darwin_arm64.tar.gz \
+  VERSION=v0.3.0 \
+  URL=https://example.com/macscope_v0.3.0_darwin_arm64.tar.gz \
   SHA256="$SHA256"
 ```
 
@@ -210,12 +253,12 @@ The helper strips a leading `v` from `VERSION` for the formula's `version` field
 Verify the rendered formula shape and install paths with:
 
 ```sh
-make verify-homebrew-formula VERSION=v0.2.0 URL=https://example.com/macscope_v0.2.0_darwin_arm64.tar.gz SHA256="$SHA256"
+make verify-homebrew-formula VERSION=v0.3.0 URL=https://example.com/macscope_v0.3.0_darwin_arm64.tar.gz SHA256="$SHA256"
 ```
 
 ## Release Workflow
 
-Pushing a version tag like `v0.2.0` runs `.github/workflows/release.yml`. The workflow:
+Pushing a version tag like `v0.3.0` runs `.github/workflows/release.yml`. The workflow:
 
 - runs `make check` and `make smoke`
 - builds `dist/macscope_<version>_darwin_arm64.tar.gz`
@@ -285,7 +328,7 @@ Classifications are evidence-based. Watchdog reports can produce likely causes s
 
 ## proc
 
-`macscope proc [--json] <pid-or-name>` resolves a running process with `ps` and `pgrep`, summarizes PID/PPID/user/group/state/path/command, and checks executable signing when a path is available.
+`macscope proc [--json] [--maps] [--tree] [--full] <pid-or-name>` resolves a running process with `ps` and `pgrep`, summarizes PID/PPID/user/group/state/path/command, and checks executable signing when a path is available.
 
 The command is read-only. It does not attach to the process.
 
@@ -359,7 +402,7 @@ The command is read-only. It does not enable, disable, or remove extensions.
 
 `macscope tui` launches an interactive full-screen terminal UI built with Bubble Tea. It displays a two-pane browser: the left pane lists available macscope commands, the right pane shows the output of the selected command. Commands execute on demand, with results cached during the session. A spinner and elapsed time provide feedback while collection is in progress.
 
-Navigate with arrow keys or j/k, press enter to run, tab to switch focus, and esc/q to exit. Prompted commands (like `macho` with path, or `proc` with pid/name) will request a value in an interactive prompt. The TUI uses the same collectors and permissions as plain commands; it is read-only and requires no sudo.
+Navigate with arrow keys or j/k to load a selection automatically after a short pause. The initial selection loads on startup. Cached reports appear immediately; `r` refreshes them, and Enter remains available to run again. Selections needing a PID or path open their prompt automatically. Arrow keys can continue browsing from an empty automatic prompt; Esc dismisses it. Moving to a different selection stops a read-only collector before loading the new one, while an explicitly started evidence export is allowed to finish. Tab switches focus and `q` quits. The `proc` entry includes memory maps and ancestry. `ipc watch` displays changes live and retains recent output in bounded buffers. `collect` requires Enter, then asks for a PID and a new output directory before saving raw evidence locally; rerun asks again. Other entries are read-only. The TUI uses the same collectors and permissions as plain commands and never invokes sudo.
 
 The TUI requires an interactive terminal (TTY). Plain-text and `--json` output of all other commands remain unchanged, so scripting and pipes are unaffected.
 

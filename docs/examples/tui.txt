@@ -31,7 +31,7 @@ Expected shape:
   │                    │                                                │
   │ Keys:              │                                                │
   │ ↑/↓ (j/k) select  │                                                │
-  │ enter run         │                                                │
+  │ select auto-load  │                                                │
   │ r rerun           │                                                │
   │ tab switch        │                                                │
   │ esc/q quit        │                                                │
@@ -42,22 +42,34 @@ Notes:
   The TUI is a full-screen Bubble Tea application with a two-pane layout.
   Left pane: command list; right pane: output of the selected command.
   Results are cached per-command for the duration of the session.
+  The initial selection and newly highlighted read-only selections load
+  automatically after a short pause. Rapid navigation skips intermediate rows.
+  Cached results appear immediately; r refreshes them. Canceled runs retry when
+  selected again. Changing selections cancels a read-only collector first.
+  An explicitly started evidence export is allowed to finish writing its manifest.
   A spinner appears while a command collects; elapsed time is shown in the header.
 
   Commands available: specs, disk, version, persist, agents, daemons, sysext, vpn.
   Commands with defaults: tcc (--last 30m), es (--last 30m), panic (--last).
   Commands that prompt: macho (path), proc (pid or name), attach (pid), timeline (pid).
+  proc includes --maps and --tree for runtime mappings and process ancestry.
+  ipc (pid or name) collects one snapshot; ipc watch streams changes live until Esc.
+  collect prompts for a PID and a new output directory before saving all four
+  reports and raw evidence locally. Rerun prompts again; existing paths are refused.
+  PID/path prompts open automatically for read-only selections. Arrow keys can
+  leave an empty automatic prompt; Esc dismisses it. collect still requires Enter.
 
   Keyboard shortcuts:
-    ↑/↓ or j/k    select previous/next command
-    enter         run the selected command
-    r             rerun the current command
+    ↑/↓ or j/k    select and auto-load previous/next command
+    enter         submit input, run again, or begin evidence export
+    r             refresh the current command
     pgup/pgdn     scroll output up/down
     tab           switch focus between list and report
     esc           cancel a prompt or running command
     q or ctrl+c   quit
 
-  The TUI requires an interactive terminal (TTY). It is read-only and uses the same
-  collectors and permissions as plain commands; no sudo is required.
+  The TUI requires an interactive terminal (TTY) and uses the same collectors
+  and permissions as plain commands. Collection never invokes sudo. The collect
+  entry writes only to the explicit new local destination; other entries are read-only.
   Plain text and --json output of all other commands remain unchanged for scripting.
   Honors NO_COLOR and MACSCOPE_NO_COLOR environment variables.

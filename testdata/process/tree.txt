@@ -1,0 +1,6 @@
+    1     0 Mon Oct 26 08:00:00 2026 /sbin/launchd
+   20     1 Mon Oct 26 08:01:00 2026 /Applications/Terminal.app/Contents/MacOS/Terminal
+   42    20 Mon Oct 26 09:00:00 2026 /Applications/Example App.app/Contents/MacOS/Example App
+   77    42 Mon Oct 26 09:01:00 2026 /usr/bin/helper
+   78    42 Mon Oct 26 09:02:00 2026 /usr/bin/helper2
+   99    20 Mon Oct 26 09:03:00 2026 /bin/zsh

@@ -1,0 +1,11 @@
+Process:         Example App [42]
+Path:            /Applications/Example App.app/Contents/MacOS/Example App
+==== Non-writable regions for process 42
+REGION TYPE                    START - END         [ VSIZE] PRT/MAX SHRMOD  REGION DETAIL
+__TEXT                      100000000-100004000    [   16K] r-x/rwx SM=COW /Applications/Example App.app/Contents/MacOS/Example App
+__LINKEDIT                  100004000-100008000    [   16K] r--/r-- SM=COW /Applications/Example App.app/Contents/MacOS/Example App
+__TEXT                      180000000-180100000    [ 1024K] r-x/r-x SM=COW /usr/lib/libSystem.B.dylib
+==== Writable regions for process 42
+MALLOC_SMALL                200000000-200200000    [ 2048K] rw-/rwx SM=PRV
+Stack                       300000000-300100000    [ 1024K] rw-/rwx SM=SHM thread 0
+mapped file                 400000000-400004000    [   16K] r--/r-- SM=SHM /Users/alice/data file.bin

@@ -8,7 +8,7 @@ import (
 	"github.com/jdefrancesco/macscope/internal/output"
 )
 
-var version = "v0.2.0"
+var version = "v0.3.0"
 var buildCommit = "unknown"
 var buildDate = "unknown"
 
@@ -91,7 +91,7 @@ func commands() []commandSpec {
 		},
 		{
 			Name:    "proc",
-			Usage:   "macscope proc [--json] <pid-or-name>",
+			Usage:   procUsage,
 			Summary: "Triage a running process by PID or name.",
 			Run:     runProc,
 		},
@@ -100,6 +100,12 @@ func commands() []commandSpec {
 			Usage:   ipcUsage,
 			Summary: "Show process IPC descriptors and Mach port rights, queues, and peers.",
 			Run:     runIPC,
+		},
+		{
+			Name:    "collect",
+			Usage:   collectUsage,
+			Summary: "Save private local evidence bundles with raw output, timestamps, and checksums.",
+			Run:     runCollect,
 		},
 		{
 			Name:    "attach",

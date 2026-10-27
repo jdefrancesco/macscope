@@ -43,28 +43,36 @@ type activeRun struct {
 	done      <-chan struct{}
 	started   time.Time
 	canceling bool
+	live      bool
+	out       *limitedBuffer
+	errOut    *limitedBuffer
 }
 
 // Model is the Bubble Tea model for the macscope command browser.
 type Model struct {
-	ctx       context.Context
-	entries   []Entry
-	cursor    int
-	mode      mode
-	focus     focus
-	results   map[int]result
-	wrapped   map[int]string // wrapped result content at wrapWidth
-	wrapWidth int
-	promptErr string
-	active    *activeRun
-	nextRunID int
-	width     int
-	height    int
-	ready     bool
-	viewport  viewport.Model
-	input     lineInput
-	spinner   spinner.Model
-	styles    styles
+	ctx         context.Context
+	entries     []Entry
+	cursor      int
+	mode        mode
+	focus       focus
+	results     map[int]result
+	wrapped     map[int]string // wrapped result content at wrapWidth
+	wrapWidth   int
+	promptErr   string
+	promptIndex int
+	promptArgs  []string
+	autoPrompt  bool
+	selectionID int
+	autoPending bool
+	active      *activeRun
+	nextRunID   int
+	width       int
+	height      int
+	ready       bool
+	viewport    viewport.Model
+	input       lineInput
+	spinner     spinner.Model
+	styles      styles
 }
 
 var _ tea.Model = Model{}

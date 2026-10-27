@@ -1,0 +1,55 @@
+Examples:
+
+  macscope collect --pid 1234 --out ./case-1234
+  macscope collect --pid 1234 --out ./case-maps --reports maps,tree --json
+
+Purpose:
+
+  Save a local, private evidence bundle from selected process collectors.
+  Requires macOS; does not invoke sudo, change security policy, or upload data.
+  The TUI collect entry prompts for a PID and a new output directory before
+  writing all four reports. Rerun asks again for a destination.
+
+Selection:
+
+  proc: process identity and executable signing (ps, codesign)
+  ipc: Mach ports and local IPC descriptors (lsmp, lsof)
+  maps: runtime virtual regions and image mappings (vmmap)
+  tree: ancestors and direct children (ps)
+
+  All four are selected by default. Unknown or duplicate selections are rejected.
+  Raw stdout/stderr, command arguments, capture times, and errors are recorded
+  in commands.json. Per-report JSON retains parsed values and availability.
+
+Bundle layout:
+
+  case-1234/             mode 0700
+    proc.json            mode 0600
+    ipc.json             mode 0600
+    maps.json            mode 0600
+    tree.json            mode 0600
+    commands.json        mode 0600
+    manifest.json        mode 0600
+
+Manifest:
+
+  Records schema/tool versions, target PID/start time, UTC start/end capture
+  times, report statuses, relative file paths, byte sizes, and SHA-256 hashes.
+  Every evidence file is hashed; manifest.json is excluded from its own hash list.
+  Checksums detect file changes, not authenticity. Preserve the manifest separately
+  if independently verifying later modifications is important to your workflow.
+
+Safety and limitations:
+
+  The destination must not already exist, including as a symlink. Its parent must
+  exist. Existing directories and files are never overwritten. Raw evidence is
+  unredacted and may contain paths, arguments, entitlements, and identifiers.
+  A notice goes to stderr; --json writes a manifest object only to stdout.
+
+  Snapshots are sequential, not atomic. Permission failures remain as evidence.
+  A partial bundle can be a successful collection; inspect its status/reports.
+  Cancellation preserves collected files and attempts to write a partial manifest.
+  Disk/write failures preserve completed files and return an error; a failed
+  manifest write does not advertise a successful manifest path.
+  No memory payloads are dumped, and no log archives or unrelated user files are
+  collected. Only the four explicitly supported report types are available.

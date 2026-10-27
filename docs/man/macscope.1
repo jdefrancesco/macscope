@@ -1,4 +1,4 @@
-.Dd October 9, 2026
+.Dd October 26, 2026
 .Dt MACSCOPE 1
 .Os
 .Sh NAME
@@ -28,12 +28,28 @@
 .Nm
 .Cm proc
 .Op Fl -json
+.Op Fl -maps
+.Op Fl -tree
+.Op Fl -full
 .Ar pid-or-name
 .Nm
 .Cm ipc
 .Op Fl -json
 .Op Fl -full
 .Ar pid-or-name
+.Nm
+.Cm ipc
+.Fl -watch
+.Op Fl -interval Ar duration
+.Op Fl -count Ar N
+.Op Fl -jsonl
+.Ar pid-or-name
+.Nm
+.Cm collect
+.Fl -pid Ar pid
+.Fl -out Ar new-directory
+.Op Fl -reports Ar proc,ipc,maps,tree
+.Op Fl -json
 .Nm
 .Cm attach
 .Op Fl -json
@@ -132,9 +148,18 @@ assessment, extended attributes, linked libraries, and evidence-backed
 findings.
 .Fl -triage
 flag prints a compact 0-100 score with signals and next actions.
-.It Cm proc Op Fl -json Ar pid-or-name
+.It Cm proc Op Fl -json Op Fl -maps Op Fl -tree Op Fl -full Ar pid-or-name
 Resolve a running process using native process tools, summarize identity
 fields, and check executable signing when a path is available.
+.Fl -maps
+adds virtual region ranges, sizes, protections, sharing modes, and image
+mappings from vmmap -w. These are not memory payloads or a complete dyld inventory.
+Sizes are virtual spans, not resident RAM. Task access may be denied.
+.Fl -tree
+adds ancestors and direct children from ps, including paths and start times.
+Start times use local time with second resolution; snapshots are not atomic.
+.Fl -full
+preserves home paths and includes raw vmmap output. JSON retains parsed paths.
 .It Cm ipc Op Fl -json Op Fl -full Ar pid-or-name
 Show process Mach port rights, queue limits, message counts, and available
 peer PIDs/names using lsmp, plus Unix sockets, pipes, FIFOs, POSIX shared-memory
@@ -153,6 +178,35 @@ JSON includes unredacted parsed fields; raw output requires
 This is a snapshot, not a message trace or an XPC service-name map.
 System V IPC and anonymous shared-memory mappings are outside this view.
 If both sources are unavailable, the report is emitted with a nonzero exit status.
+.It Cm ipc Fl -watch Op Fl -interval Ar duration Op Fl -count Ar N Op Fl -jsonl Ar pid-or-name
+Poll one PID/start-time/executable identity, stopping if an observed identity
+changes or becomes unavailable. Second-resolution start times cannot rule out
+same-second PID reuse. Show added/removed ports, changed rights and metadata,
+queue changes, and descriptor changes. Both source snapshots must be ok before
+computing deltas; access loss is never interpreted as removal.
+The delay between completed snapshots defaults to 2s and must be 250ms to 24h.
+.Fl -count
+limits snapshots. Ctrl-C stops a watch.
+.Fl -jsonl
+emits one complete event per line; single-snapshot
+.Fl -json
+cannot be used with a watch. Polling can miss short-lived events and does not
+capture message payloads. The TUI's ipc watch entry streams results until Esc.
+.It Cm collect Fl -pid Ar pid Fl -out Ar new-directory Op Fl -reports Ar proc,ipc,maps,tree Op Fl -json
+Save selected process reports, raw native command output, and a manifest locally.
+All four reports are selected by default. The new destination's parent must
+exist; existing paths and symlinks are refused. Directories use mode 0700 and
+files mode 0600. The manifest records capture times, versions, source availability,
+byte sizes, and SHA-256 hashes of evidence files, excluding the manifest itself.
+Hashes detect changes and do not authenticate evidence.
+Raw files may contain sensitive paths, arguments, entitlements, and identifiers.
+No evidence is uploaded, no sudo is invoked, and no memory payload is saved.
+Permission errors and canceled snapshots produce partial evidence.
+Write failures preserve completed files and return an error; a successful
+manifest path is reported only after it is written.
+.Fl -json
+emits the manifest while evidence remains on disk. The TUI collect entry prompts
+for a PID and a new output directory before writing; rerun prompts again.
 .It Cm attach Op Fl -json Op Fl -last Ar duration Ar pid
 Explain likely LLDB attach failures using process identity, developer group
 membership, signing state, and recent attach-relevant unified logs.
@@ -195,7 +249,14 @@ of the selected command.
 Commands execute on demand with results cached during the session.
 Navigate with arrow keys or j/k, press enter to run, tab to switch focus, and esc/q to exit.
 Prompted commands request a value interactively.
-The TUI requires an interactive terminal and does not modify system state.
+The TUI requires an interactive terminal. Its collect entry writes raw evidence
+only to the explicitly supplied new directory; other entries are read-only.
+Read-only selections load automatically after a short navigation delay.
+Cached results appear immediately; r refreshes them. PID/path selections open
+their prompt automatically. Arrow keys can leave an empty automatic prompt.
+Esc stops pending collection or dismisses a prompt. Changing selections cancels
+a read-only collector before starting another; explicit evidence exports finish.
+The collect entry requires Enter before asking for its PID and destination.
 .It Cm completion Ar bash | zsh | fish
 Generate shell completion scripts.
 .El

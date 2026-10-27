@@ -16,20 +16,26 @@ type CommandRunner interface {
 }
 
 type Info struct {
-	PID     int    `json:"pid"`
-	PPID    int    `json:"ppid"`
-	User    string `json:"user,omitempty"`
-	Group   string `json:"group,omitempty"`
-	Stat    string `json:"stat,omitempty"`
-	Comm    string `json:"comm,omitempty"`
-	Command string `json:"command,omitempty"`
-	Name    string `json:"name,omitempty"`
-	Path    string `json:"path,omitempty"`
+	PID       int    `json:"pid"`
+	PPID      int    `json:"ppid"`
+	User      string `json:"user,omitempty"`
+	Group     string `json:"group,omitempty"`
+	Stat      string `json:"stat,omitempty"`
+	Comm      string `json:"comm,omitempty"`
+	Command   string `json:"command,omitempty"`
+	Name      string `json:"name,omitempty"`
+	Path      string `json:"path,omitempty"`
+	StartedAt string `json:"started_at,omitempty"`
 }
 
 func Lookup(ctx context.Context, query string, runner CommandRunner) (Info, error) {
-	if query == "" {
-		return Info{}, errors.New("empty process query")
+	if strings.TrimSpace(query) == "" || strings.HasPrefix(query, "-") {
+		return Info{}, errors.New("supply a positive PID or process name without a leading '-'")
+	}
+	if strings.Trim(query, "0123456789") == "" {
+		if _, ok := ParsePID(query); !ok {
+			return Info{}, fmt.Errorf("invalid PID: %s", query)
+		}
 	}
 	if runner == nil {
 		runner = collect.Runner{}

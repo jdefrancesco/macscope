@@ -24,10 +24,12 @@ Expected shape:
         List disk capacity, used space, and free space by volume.
     macscope macho [--json] [--full] [--triage] <path>
         Inspect binary/app identity, architecture, signing, Gatekeeper, xattrs, and linked libraries.
-    macscope proc [--json] <pid-or-name>
+    macscope proc [--json] [--maps] [--tree] [--full] <pid-or-name>
         Triage a running process by PID or name.
     macscope ipc [--json] [--full] <pid-or-name>
         Show process IPC descriptors and Mach port rights, queues, and peers.
+    macscope collect --pid <pid> --out <new-directory> [--reports proc,ipc,maps,tree] [--json]
+        Save private local evidence bundles with raw output, timestamps, and checksums.
     macscope attach [--json] [--last 30m] <pid>
         Explain likely LLDB attach failures using signing, group, and log evidence.
     macscope persist [--json] [--dir <launchd-dir>]

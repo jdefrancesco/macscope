@@ -2,12 +2,14 @@ package cli
 
 import (
 	"context"
+	"encoding/json"
 	"errors"
 	"fmt"
 	"io"
 	"strconv"
 	"strings"
 	"text/tabwriter"
+	"time"
 	"unicode"
 
 	"github.com/jdefrancesco/macscope/internal/ipc"
@@ -20,6 +22,9 @@ const ipcUsage = "macscope ipc [--json] [--full] <pid-or-name>"
 type ipcFlags struct {
 	json, full, help bool
 	query            string
+	watch, jsonl     bool
+	interval         time.Duration
+	count            int
 }
 
 func runIPC(ctx context.Context, args []string, streams output.Streams) error {
@@ -34,6 +39,9 @@ func runIPCWithRunner(ctx context.Context, args []string, streams output.Streams
 	if flags.help {
 		printIPCHelp(streams.Out)
 		return nil
+	}
+	if flags.watch {
+		return runIPCWatch(ctx, flags, streams, runner)
 	}
 	report, err := ipc.Analyze(ctx, ipc.Options{Query: flags.query, Full: flags.full, Runner: runner})
 	if err != nil {
@@ -56,7 +64,8 @@ func runIPCWithRunner(ctx context.Context, args []string, streams output.Streams
 func parseIPCFlags(args []string) (ipcFlags, error) {
 	var flags ipcFlags
 	positional := false
-	for _, arg := range args {
+	for i := 0; i < len(args); i++ {
+		arg := args[i]
 		if !positional {
 			switch arg {
 			case "--":
@@ -71,6 +80,34 @@ func parseIPCFlags(args []string) (ipcFlags, error) {
 			case "--full":
 				flags.full = true
 				continue
+			case "--watch":
+				flags.watch = true
+				continue
+			case "--jsonl":
+				flags.jsonl = true
+				continue
+			case "--interval":
+				i++
+				if i >= len(args) {
+					return ipcFlags{}, errors.New("--interval requires a duration")
+				}
+				value, err := time.ParseDuration(args[i])
+				if err != nil || value < 250*time.Millisecond || value > 24*time.Hour {
+					return ipcFlags{}, errors.New("--interval must be between 250ms and 24h")
+				}
+				flags.interval = value
+				continue
+			case "--count":
+				i++
+				if i >= len(args) {
+					return ipcFlags{}, errors.New("--count requires a positive snapshot count")
+				}
+				value, err := strconv.Atoi(args[i])
+				if err != nil || value <= 0 {
+					return ipcFlags{}, errors.New("--count requires a positive snapshot count")
+				}
+				flags.count = value
+				continue
 			}
 			if strings.HasPrefix(arg, "-") {
 				return ipcFlags{}, fmt.Errorf("unknown ipc flag: %s", arg)
@@ -84,22 +121,87 @@ func parseIPCFlags(args []string) (ipcFlags, error) {
 	if !flags.help && flags.query == "" {
 		return ipcFlags{}, errors.New("usage: " + ipcUsage)
 	}
+	if !flags.help {
+		if flags.jsonl && !flags.watch || !flags.watch && (flags.interval != 0 || flags.count != 0) {
+			return ipcFlags{}, errors.New("--jsonl, --interval, and --count require --watch")
+		}
+		if flags.watch && flags.json {
+			return ipcFlags{}, errors.New("use --jsonl with --watch; --json is for a single snapshot")
+		}
+		if flags.watch && flags.interval == 0 {
+			flags.interval = 2 * time.Second
+		}
+	}
 	return flags, nil
 }
 
 func printIPCHelp(w io.Writer) {
 	fmt.Fprintln(w, "Usage:\n  "+ipcUsage)
+	fmt.Fprintln(w, "  macscope ipc --watch [--interval 2s] [--count N] [--jsonl] [--full] <pid-or-name>")
 	fmt.Fprintln(w, "\nShow a process's Mach port rights, queues, and available peer processes using lsmp,")
 	fmt.Fprintln(w, "plus Unix sockets, pipes, FIFOs, POSIX shared memory, and semaphores using lsof.")
 	fmt.Fprintln(w, "Names use the same newest-match resolution as proc; use a PID for an exact target.")
 	fmt.Fprintln(w, "\nFlags:")
 	fmt.Fprintln(w, "  --json   Emit stable JSON with source status and unredacted paths.")
 	fmt.Fprintln(w, "  --full   Preserve paths and include raw command output (also in JSON).")
+	fmt.Fprintln(w, "  --watch  Poll one pinned process; show port/descriptor changes and queue growth.")
+	fmt.Fprintln(w, "  --jsonl  Emit one complete watch event per line (requires --watch).")
+	fmt.Fprintln(w, "  --interval 2s   Delay between completed snapshots (250ms to 24h).")
+	fmt.Fprintln(w, "  --count N       Stop after N snapshots; otherwise watch until Ctrl-C or target exit.")
 	fmt.Fprintln(w, "\nRequires macOS. Read-only; does not invoke sudo or change security policy.")
 	fmt.Fprintln(w, "Mach inspection requires task-read access. Root can improve lsmp visibility,")
 	fmt.Fprintln(w, "but protected processes may remain inaccessible. Unavailable sources are explicit.")
 	fmt.Fprintln(w, "This is a snapshot of ports/descriptors, not message contents or an XPC service-name map.")
 	fmt.Fprintln(w, "System V IPC and anonymous shared-memory mappings are outside this descriptor view.")
+	fmt.Fprintln(w, "Watch deltas require two complete source snapshots; partial/denied sources are not empty.")
+	fmt.Fprintln(w, "PID/start-time changes stop the watch. Short-lived activity between polls can be missed.")
+}
+
+func runIPCWatch(ctx context.Context, flags ipcFlags, streams output.Streams, runner process.CommandRunner) error {
+	encoder := json.NewEncoder(streams.Out)
+	err := ipc.Watch(ctx, ipc.WatchOptions{Options: ipc.Options{Query: flags.query, Full: flags.full, Runner: runner}, Interval: flags.interval, Count: flags.count}, func(event ipc.WatchEvent) error {
+		if flags.jsonl {
+			return encoder.Encode(event)
+		}
+		if event.Sequence == 1 {
+			return renderIPCReport(streams.Out, event.Snapshot, flags.full)
+		}
+		tw := output.NewTextWriter(streams.Out)
+		if _, err := fmt.Fprintln(streams.Out); err != nil {
+			return err
+		}
+		if err := tw.Section(fmt.Sprintf("IPC Snapshot %d (%s)", event.Sequence, event.CapturedAt.Format(time.RFC3339))); err != nil {
+			return err
+		}
+		for _, warning := range event.Warnings {
+			if err := tw.Bullet(ipcText(warning, flags.full)); err != nil {
+				return err
+			}
+		}
+		for _, change := range event.Changes {
+			line := fmt.Sprintf("%s %s %s", change.Source, change.Kind, change.Name)
+			if len(change.Fields) > 0 {
+				line += " [" + strings.Join(change.Fields, ",") + "]"
+			}
+			if change.Before != nil && change.After != nil {
+				line += " queued=" + ipcCounter(change.Before.MessageCount) + " -> " + ipcCounter(change.After.MessageCount)
+			}
+			if change.FileAfter != nil {
+				line += " " + change.FileAfter.Endpoint
+			}
+			if err := tw.Bullet(ipcText(line, flags.full)); err != nil {
+				return err
+			}
+		}
+		if len(event.Changes) == 0 {
+			return tw.Bullet("no comparable changes observed")
+		}
+		return nil
+	})
+	if errors.Is(err, context.Canceled) && ctx.Err() != nil {
+		return nil
+	}
+	return err
 }
 
 func renderIPCReport(w io.Writer, report ipc.Report, full bool) error {

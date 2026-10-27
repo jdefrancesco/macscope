@@ -29,12 +29,12 @@ func TestCommandSmokeHelpAndCompletions(t *testing.T) {
 		{
 			name: "version",
 			args: []string{"version"},
-			want: []string{"macscope v0.2.0", "Commit:", "Platform:"},
+			want: []string{"macscope v0.3.0", "Commit:", "Platform:"},
 		},
 		{
 			name: "version json",
 			args: []string{"version", "--json"},
-			want: []string{`"name": "macscope"`, `"version": "v0.2.0"`, `"goos":`},
+			want: []string{`"name": "macscope"`, `"version": "v0.3.0"`, `"goos":`},
 			json: true,
 		},
 		{
@@ -45,12 +45,17 @@ func TestCommandSmokeHelpAndCompletions(t *testing.T) {
 		{
 			name: "proc help",
 			args: []string{"proc", "--help"},
-			want: []string{"macscope proc [--json] <pid-or-name>"},
+			want: []string{"macscope proc [--json] [--maps] [--tree] [--full] <pid-or-name>"},
 		},
 		{
 			name: "ipc help",
 			args: []string{"ipc", "--help"},
 			want: []string{"macscope ipc [--json] [--full] <pid-or-name>", "lsmp", "lsof"},
+		},
+		{
+			name: "collect help",
+			args: []string{"collect", "--help"},
+			want: []string{"macscope collect --pid <pid> --out <new-directory>", "SHA-256", "0600"},
 		},
 		{
 			name: "attach help",

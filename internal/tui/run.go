@@ -73,12 +73,10 @@ func waitForActive(final tea.Model, timeout time.Duration) bool {
 	}
 }
 
-// runEntryCmd executes entry.Run off the UI goroutine with captured streams.
-// done is closed once entry.Run has returned.
-func runEntryCmd(ctx context.Context, entry Entry, index, runID int, args []string, done chan<- struct{}) tea.Cmd {
+// runEntryCmd executes entry.Run off the UI goroutine with bounded captured streams.
+func runEntryCmd(ctx context.Context, entry Entry, index, runID int, args []string, done chan<- struct{}, out, errOut *limitedBuffer) tea.Cmd {
 	return func() tea.Msg {
 		defer close(done)
-		out, errOut := newLimitedBuffer(maxOutputBytes), newLimitedBuffer(maxOutputBytes)
 		streams := output.Streams{In: strings.NewReader(""), Out: out, Err: errOut}
 		start := time.Now()
 		err := invoke(ctx, entry, args, streams)
@@ -109,6 +107,10 @@ func (m Model) startRun(index int, args []string) (Model, tea.Cmd) {
 	}
 	runCtx, cancel := context.WithCancel(m.ctx)
 	done := make(chan struct{})
+	out, errOut := newLimitedBuffer(maxOutputBytes), newLimitedBuffer(maxOutputBytes)
+	entry := m.entries[index]
+	out.tail = entry.Live
+	errOut.tail = entry.Live
 	m.nextRunID++
 	m.active = &activeRun{
 		index:   index,
@@ -117,8 +119,13 @@ func (m Model) startRun(index int, args []string) (Model, tea.Cmd) {
 		cancel:  cancel,
 		done:    done,
 		started: time.Now(),
+		live:    entry.Live, out: out, errOut: errOut,
 	}
-	cmd := runEntryCmd(runCtx, m.entries[index], index, m.nextRunID, args, done)
+	if entry.Live {
+		m.results = withResult(m.results, index, result{args: args})
+		m.wrapped = withoutKey(m.wrapped, index)
+	}
+	cmd := runEntryCmd(runCtx, entry, index, m.nextRunID, args, done, out, errOut)
 	return m.refreshReport(), tea.Batch(cmd, m.spinner.Tick)
 }
 
@@ -141,7 +148,11 @@ func (m Model) finishRun(msg runFinishedMsg) Model {
 	if msg.index != m.cursor {
 		return m
 	}
-	return m.refreshReport()
+	m = m.refreshReport()
+	if m.entries[msg.index].Live {
+		m.viewport.GotoBottom()
+	}
+	return m
 }
 
 // entryArgs returns a fresh slice of entry.Args plus extra values.

@@ -25,12 +25,15 @@ func TestTUIEntriesOrderAndExclusions(t *testing.T) {
 		if _, ok := presets[cmd.Name]; ok {
 			want = append(want, cmd.Name)
 		}
+		if cmd.Name == "ipc" {
+			want = append(want, "ipc watch")
+		}
 	}
 	if !reflect.DeepEqual(got, want) {
 		t.Fatalf("tuiEntries names = %v, want %v", got, want)
 	}
-	if len(got) != len(presets) {
-		t.Fatalf("tuiEntries len = %d, want %d (every preset should match a command)", len(got), len(presets))
+	if len(got) != len(presets)+1 {
+		t.Fatalf("tuiEntries len = %d, want %d (presets plus live IPC entry)", len(got), len(presets)+1)
 	}
 	for _, excluded := range []string{"completion", "tui"} {
 		for _, name := range got {
@@ -59,8 +62,10 @@ func TestTUIEntriesPresets(t *testing.T) {
 		{name: "es", args: []string{"--last", "30m"}},
 		{name: "panic", args: []string{"--last"}},
 		{name: "macho", prompt: "path"},
-		{name: "proc", prompt: "pid or name"},
+		{name: "proc", args: []string{"--maps", "--tree"}, prompt: "pid or name"},
 		{name: "ipc", prompt: "pid or name"},
+		{name: "ipc watch", args: []string{"--watch"}, prompt: "pid or name"},
+		{name: "collect"},
 		{name: "attach", prompt: "pid"},
 		{name: "timeline", args: []string{"--pid"}, prompt: "pid"},
 	}
@@ -110,6 +115,27 @@ func TestTUIEntriesArgsAreIndependent(t *testing.T) {
 	}
 }
 
+func TestRuntimeTUIControls(t *testing.T) {
+	for _, entry := range tuiEntries() {
+		switch entry.Name {
+		case "ipc watch":
+			if !entry.Live || entry.Command != "ipc" || entry.CommandLine("42") != "macscope ipc --watch 42" {
+				t.Fatalf("watch=%#v", entry)
+			}
+		case "collect":
+			if !entry.AlwaysPrompt || !entry.Live || len(entry.Prompts) != 2 || entry.Prompts[0].Flag != "--pid" || entry.Prompts[1].Flag != "--out" {
+				t.Fatalf("collect=%#v", entry)
+			}
+			if entry.Prompts[0].Validate("0") == nil || entry.Prompts[0].Validate("42") != nil {
+				t.Fatal("invalid PID validation")
+			}
+			if entry.Prompts[1].Validate(t.TempDir()) == nil {
+				t.Fatal("existing output accepted")
+			}
+		}
+	}
+}
+
 func TestRunTUI(t *testing.T) {
 	tests := []struct {
 		name       string
@@ -119,7 +145,7 @@ func TestRunTUI(t *testing.T) {
 		wantTermEr bool
 	}{
 		{name: "non-terminal streams", wantTermEr: true},
-		{name: "help long", args: []string{"--help"}, wantOut: []string{"macscope tui", "enter run", "--json"}},
+		{name: "help long", args: []string{"--help"}, wantOut: []string{"macscope tui", "auto-load", "--json"}},
 		{name: "help short", args: []string{"-h"}, wantOut: []string{"macscope tui"}},
 		{name: "unknown arg", args: []string{"--bogus"}, wantErr: "unknown tui argument: --bogus"},
 	}

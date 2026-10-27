@@ -55,7 +55,7 @@ func TestEnterRunsEntryWithoutPrompt(t *testing.T) {
 		t.Fatalf("args = %q, want %q", done.args, want)
 	}
 	if !strings.Contains(done.out.text, `args=["--last" "30m"]`) || done.errOut.text != "warn\n" {
-		t.Fatalf("unexpected captured output %q / %q", done.out, done.errOut)
+		t.Fatalf("unexpected captured output %#v / %#v", done.out, done.errOut)
 	}
 	m, _ = send(t, m, done)
 	if m.active != nil {
@@ -79,7 +79,7 @@ func TestEnterIgnoredWhileRunning(t *testing.T) {
 	if _, ok := m.results[0]; !ok {
 		t.Fatal("result for entry 0 should be cached")
 	}
-	if !strings.Contains(m.View(), "Press enter to run `macscope logs --last 30m`") {
+	if !strings.Contains(m.View(), "Loads automatically when selected: `macscope logs --last 30m`") {
 		t.Fatal("unrun entry should show placeholder")
 	}
 }

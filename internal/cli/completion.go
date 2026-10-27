@@ -109,9 +109,11 @@ func completionFlags(command string) []completionFlag {
 			{Long: "triage", Description: "Show compact triage score and evidence."},
 		}
 	case "proc":
-		return []completionFlag{help, json}
+		return []completionFlag{help, json, {Long: "maps", Description: "Show runtime memory regions and image mappings."}, {Long: "tree", Description: "Show process ancestry and children."}, {Long: "full", Description: "Preserve paths and include raw vmmap output."}}
 	case "ipc":
-		return []completionFlag{help, json, {Long: "full", Description: "Preserve paths and include raw command output."}}
+		return []completionFlag{help, json, {Long: "full", Description: "Preserve paths and include raw command output."}, {Long: "watch", Description: "Watch a pinned process for IPC changes."}, {Long: "jsonl", Description: "Emit watch events as JSON Lines."}, {Long: "interval", Description: "Set watch delay, default 2s."}, {Long: "count", Description: "Stop after N snapshots."}}
+	case "collect":
+		return []completionFlag{help, json, {Long: "pid", Description: "Set target PID."}, {Long: "out", Description: "Write to a new local directory."}, {Long: "reports", Description: "Select proc,ipc,maps,tree reports."}}
 	case "attach":
 		return []completionFlag{help, json, last}
 	case "agents", "daemons":
@@ -165,7 +167,7 @@ func completionArgChoices(command string) []string {
 
 func completionFileArgs(command string) bool {
 	switch command {
-	case "macho", "panic", "persist", "disk", "agents", "daemons":
+	case "macho", "panic", "persist", "disk", "agents", "daemons", "collect":
 		return true
 	default:
 		return false

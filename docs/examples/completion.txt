@@ -13,3 +13,9 @@ Quick local sourcing:
   source <(macscope completion bash)
   source <(macscope completion zsh)
   macscope completion fish | source
+
+Runtime inspection flags are included:
+
+  proc: --maps, --tree, --full, --json
+  ipc: --watch, --interval, --count, --jsonl, --full, --json
+  collect: --pid, --out, --reports, --json

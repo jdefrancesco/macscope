@@ -11,7 +11,7 @@ func (m Model) reportContent() string {
 	if !ok {
 		return m.styles.muted.Render("No commands available.")
 	}
-	if m.isRunning(m.cursor) {
+	if m.isRunning(m.cursor) && !entry.Live {
 		return ""
 	}
 	res, ok := m.results[m.cursor]
@@ -22,10 +22,16 @@ func (m Model) reportContent() string {
 }
 
 func (m Model) placeholder(entry Entry) string {
-	text := fmt.Sprintf("Press enter to run `%s`", entry.CommandLine())
-	if entry.Prompt != "" {
-		text = fmt.Sprintf("Press enter to run `%s <%s>`\n\nYou will be asked for a %s first.",
-			entry.CommandLine(), entry.Prompt, entry.Prompt)
+	text := fmt.Sprintf("Loads automatically when selected: `%s`", entry.CommandLine())
+	if entry.AlwaysPrompt {
+		text = fmt.Sprintf("Press enter to run `%s`", entry.CommandLine())
+	}
+	if fields := entry.promptFields(); len(fields) > 0 {
+		text = fmt.Sprintf("Select `%s <%s>`\n\nYou will be asked for a %s first.",
+			entry.CommandLine(), fields[0].Label, fields[0].Label)
+		if entry.AlwaysPrompt {
+			text = fmt.Sprintf("Press enter to run `%s`\n\nYou will be asked for a %s first.", entry.CommandLine(), fields[0].Label)
+		}
 	}
 	return m.styles.muted.Render(text)
 }
@@ -60,5 +66,9 @@ func (m Model) renderStream(c captured, command string) string {
 		return text
 	}
 	notice := fmt.Sprintf("… output truncated (%d bytes); run `%s` directly for full output", c.total, command)
+	if c.tail {
+		notice = fmt.Sprintf("… earlier output omitted (%d bytes total); showing latest output", c.total)
+		return notice + "\n" + text
+	}
 	return strings.TrimLeft(text+"\n"+m.styles.warn.Render(notice), "\n")
 }

@@ -1,6 +1,9 @@
 Example:
 
   macscope proc 1234
+  macscope proc --maps 1234
+  macscope proc --tree 1234
+  macscope proc --maps --tree --json 1234
 
 Purpose:
 
@@ -8,7 +11,7 @@ Purpose:
 
 Native tools:
 
-  ps, pgrep, codesign
+  ps, pgrep, codesign; vmmap -w <pid> with --maps
 
 JSON:
 
@@ -17,3 +20,15 @@ JSON:
 Notes:
 
   This command is read-only and does not attach to the target process.
+  --maps shows mapped image paths and virtual regions with address ranges,
+  byte sizes, current/maximum protections, and sharing modes. It does not save
+  memory payloads. Image mappings are not a complete dyld image inventory;
+  virtual spans do not measure resident memory. Task access can be denied.
+
+  --tree shows ancestors nearest-first and direct children with start times
+  and executable paths. ps start times use local time at second resolution.
+  Missing parents and target changes are explicit; this is a non-atomic snapshot.
+
+  Default human output redacts usernames in home paths and escapes terminal
+  controls. --full preserves paths and adds raw vmmap stdout/stderr. JSON
+  preserves parsed paths. The TUI proc entry includes maps and ancestry.
